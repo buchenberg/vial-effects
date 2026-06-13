@@ -3,9 +3,11 @@ import { Knob } from "./components/Knob";
 import { ValueBox } from "./components/ValueBox";
 import { ComboBox } from "./components/ComboBox";
 import { FilterCurve, DelayDecay, ReverbEq } from "./components/Visualizers";
-import { SYNCED_FREQUENCY_NAMES } from "./params";
+import { SYNCED_FREQUENCY_NAMES, PARAM_BY_ID } from "./params";
 
 const syncName = (i: number) => SYNCED_FREQUENCY_NAMES[Math.max(0, Math.min(SYNCED_FREQUENCY_NAMES.length - 1, i))];
+// Vial shows the voice count as pairs × display_multiply (4) — e.g. 4 -> "16".
+const voiceCount = (v: number) => `${v * PARAM_BY_ID.chorus_voices.displayMultiply}`;
 
 export default function App() {
   return (
@@ -13,7 +15,7 @@ export default function App() {
       <Panel title="Chorus" kind="chorus" onId="chorus_on">
         <div className="col">
           <div className="row">
-            <ValueBox id="chorus_voices" label="Voices" format={(v) => `${v}`} />
+            <ValueBox id="chorus_voices" label="Voices" format={voiceCount} />
             <ValueBox id="chorus_tempo" label="Tempo" format={syncName} />
           </div>
           <div className="row">

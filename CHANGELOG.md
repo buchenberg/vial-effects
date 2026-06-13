@@ -33,9 +33,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Automated tests**: native JUCE `UnitTest` (parameter scaling + engine smoke:
   finite/bounded output, exact bypass, tail decay) and web UI tests (11 Vitest
   component/param tests + 3 Playwright e2e/visual tests with a committed baseline).
-- Verified end-to-end: builds clean, all tests pass, and the Standalone renders
-  the WebView UI with correct parameter values
-  ([docs/standalone-screenshot.png](docs/standalone-screenshot.png)).
+- Chorus voice count displays as pairs × 4 (vial parity: 4 → "16").
+- Hardened initial-value delivery: re-read relay state right after subscribing so
+  a value arriving between first render and listener attachment isn't missed.
+- Verified: builds clean, native + UI tests pass, and the Standalone renders the
+  WebView UI (all three panels, float controls correct).
+
+### Known issues
+- Standalone: integer parameters (chorus voices, tempo selectors) read back as
+  their minimum in the UI — the WebView relay reports `AudioParameterInt` values
+  differently than the dev/test mock. Float controls are unaffected.
 
 ### Notes
 - On Windows the editor explicitly selects the WebView2 backend; JUCE's default

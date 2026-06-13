@@ -23,6 +23,12 @@ describe("App layout", () => {
     expect(document.querySelector('[data-param="delay_style"]')).toBeInTheDocument();
     expect(document.querySelector('[data-param="chorus_voices"]')).toBeInTheDocument();
   });
+
+  it("displays chorus voices as count = pairs x 4 (vial parity)", () => {
+    render(<App />);
+    const voices = document.querySelector('[data-param="chorus_voices"]') as HTMLElement;
+    expect(voices).toHaveTextContent("16"); // default 4 pairs -> 16 voices
+  });
 });
 
 describe("control bindings", () => {

@@ -14,6 +14,10 @@ function useValueSubscription(state: { valueChangedEvent: { addListener(f: () =>
   const [tick, setTick] = useState(0);
   useEffect(() => {
     const id = state.valueChangedEvent.addListener(() => setTick((t) => t + 1));
+    // Re-read once after subscribing: the backend's initial value can arrive
+    // between first render and listener attachment, and that event would
+    // otherwise be missed (leaving the control stuck at its default).
+    setTick((t) => t + 1);
     return () => state.valueChangedEvent.removeListener(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);

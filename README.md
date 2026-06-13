@@ -10,8 +10,12 @@ Chorus, Delay, Reverb).
 
 > **Status:** Builds and runs (VST3 + Standalone on Windows; AU on macOS). The
 > DSP, plugin, WebView UI, and tests are all in place. See
-> [CHANGELOG.md](CHANGELOG.md) and the screenshot at
-> [docs/standalone-screenshot.png](docs/standalone-screenshot.png).
+> [CHANGELOG.md](CHANGELOG.md).
+>
+> Known issue: in the standalone, integer parameters (chorus voices, the tempo
+> selectors) display their value differently than the dev/test build — the
+> WebView relay reports `AudioParameterInt` values in a way the UI reads back as
+> the minimum. Float controls are correct. Follow-up needed.
 
 ## Architecture
 
