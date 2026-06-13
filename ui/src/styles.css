@@ -1,0 +1,156 @@
+:root {
+  --bg: #16161c;
+  --panel: #24242c;
+  --panel-inset: #1b1b21;
+  --track: #3a3a45;
+  --text: #d7d7e0;
+  --label: #9a9aa8;
+  --chorus: #9b87f5;
+  --delay: #e072d6;
+  --reverb: #6f86e8;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
+  overflow: hidden;
+}
+
+.rack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  height: 100%;
+}
+
+/* ---- Panel ---- */
+.panel {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  background: var(--panel);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.panel__rail {
+  width: 56px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 0;
+  gap: 14px;
+}
+.panel__dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: box-shadow 0.15s, background 0.15s, opacity 0.15s;
+}
+.panel__dot--off { background: #3a3a45 !important; box-shadow: none !important; opacity: 0.7; }
+.panel__title {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  letter-spacing: 0.22em;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--label);
+  text-transform: uppercase;
+}
+.panel__body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px 12px 0;
+  min-width: 0;
+}
+.panel--chorus { --accent: var(--chorus); }
+.panel--delay  { --accent: var(--delay); }
+.panel--reverb { --accent: var(--reverb); }
+
+/* ---- Control column / grouping ---- */
+.group { display: flex; gap: 12px; align-items: center; }
+.col { display: flex; flex-direction: column; gap: 10px; }
+.row { display: flex; gap: 12px; }
+.spacer { flex: 1; }
+
+/* ---- Knob ---- */
+.knob {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 74px;
+}
+.knob__dial { cursor: ns-resize; touch-action: none; }
+.knob__label {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--label);
+  text-transform: uppercase;
+  text-align: center;
+  white-space: nowrap;
+}
+.knob__value {
+  font-size: 10px;
+  color: var(--accent);
+  height: 12px;
+}
+
+/* ---- Boxes (value / combo / tempo) ---- */
+.box {
+  background: var(--panel-inset);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  min-width: 86px;
+  cursor: ns-resize;
+}
+.box__value { font-size: 22px; font-weight: 600; color: var(--text); }
+.box__label {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--label);
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+.box__row { display: flex; align-items: center; gap: 8px; }
+.box__note { color: var(--accent); font-size: 18px; cursor: pointer; }
+.combo { cursor: pointer; position: relative; }
+.combo__menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--panel-inset);
+  border: 1px solid var(--track);
+  border-radius: 8px;
+  margin-top: 4px;
+  z-index: 10;
+  overflow: hidden;
+}
+.combo__item { padding: 6px 10px; font-size: 13px; }
+.combo__item:hover, .combo__item--active { background: var(--accent); color: #16161c; }
+
+/* ---- Visualizer ---- */
+.viz {
+  background: var(--panel-inset);
+  border-radius: 10px;
+  flex: 1;
+  min-width: 80px;
+  height: 100%;
+  max-height: 220px;
+}
