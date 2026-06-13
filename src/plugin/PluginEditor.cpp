@@ -24,6 +24,11 @@ VialEffectsEditor::VialEffectsEditor (VialEffectsProcessor& p)
     using namespace juce;
 
     auto options = WebBrowserComponent::Options{}
+                       .withBackend (WebBrowserComponent::Options::Backend::webview2)
+                       .withWinWebView2Options (
+                           WebBrowserComponent::Options::WinWebView2{}
+                               .withUserDataFolder (juce::File::getSpecialLocation (juce::File::tempDirectory)
+                                                        .getChildFile ("VialEffectsWebView")))
                        .withNativeIntegrationEnabled()
                        .withResourceProvider ([this] (const auto& url) { return getResource (url); });
 

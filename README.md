@@ -8,9 +8,10 @@ synth. The user interface is a React app rendered in a JUCE 8
 `WebBrowserComponent`, styled after vial's effects rack (three stacked panels:
 Chorus, Delay, Reverb).
 
-> **Status: work in progress.** The C++ (DSP + plugin + WebView editor) is
-> written; the React UI, CMake build, and tests are not yet in place, so the
-> project does not build yet. See [CHANGELOG.md](CHANGELOG.md).
+> **Status:** Builds and runs (VST3 + Standalone on Windows; AU on macOS). The
+> DSP, plugin, WebView UI, and tests are all in place. See
+> [CHANGELOG.md](CHANGELOG.md) and the screenshot at
+> [docs/standalone-screenshot.png](docs/standalone-screenshot.png).
 
 ## Architecture
 
@@ -33,10 +34,32 @@ audio in ─▶ Chorus ─▶ Delay ─▶ Reverb ─▶ audio out
 
 ## Building
 
-*(Pending — CMakeLists not yet written.)* The plan is a standard JUCE 8
-`juce_add_plugin` target (`VST3 AU Standalone`, `NEEDS_WEBVIEW2`) referencing the
-JUCE tree from the sibling `vial` checkout, with the Vite build bundled as
-binary data.
+Prerequisites: CMake ≥ 3.22, a C++17 toolchain (MSVC on Windows), Node 18+, and
+the **WebView2 SDK** (Windows). The build reuses the JUCE tree from the sibling
+`vial` checkout (`../vial/JUCE`).
+
+```bash
+# 1. Build the web UI (produces ui/dist/index.html, embedded as binary data)
+cd ui && npm install && npm run build && cd ..
+
+# 2. Configure + build the plugin (Windows: run inside a VS dev shell / vcvars)
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+      -DJUCE_WEBVIEW2_PACKAGE_LOCATION=<dir containing Microsoft.Web.WebView2.*>
+cmake --build build
+```
+
+On Windows the WebView2 NuGet package must be extracted into a
+`Microsoft.Web.WebView2.<version>/` subfolder under the path passed to
+`JUCE_WEBVIEW2_PACKAGE_LOCATION`. The editor explicitly selects the WebView2
+backend (the JUCE default on Windows is the legacy IE backend, which the resource
+provider does not support).
+
+### Tests
+
+```bash
+ctest --test-dir build          # native DSP tests (also: build/.../VialEffectsTests.exe)
+cd ui && npm test && npm run e2e # Vitest component tests + Playwright e2e/visual
+```
 
 ## Licence & attribution
 
