@@ -17,6 +17,7 @@
 #pragma once
 
 #include "common.h"
+#include "value.h" // vial-effects: make self-contained (cr::Value used below); upstream pulled this via common/common.h
 #include <string>
 
 namespace vial {

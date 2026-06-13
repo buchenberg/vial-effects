@@ -1,5 +1,8 @@
 # Build output
 /build/
+
+# Downloaded SDKs (WebView2 NuGet, etc.)
+/third_party/
 /cmake-build-*/
 *.o
 *.obj
