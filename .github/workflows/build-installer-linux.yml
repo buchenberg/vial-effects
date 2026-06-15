@@ -1,0 +1,88 @@
+name: Build Linux Installer
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-installer:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    
+    steps:
+      - name: Checkout vial-effects
+        uses: actions/checkout@v4
+        
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libasound2-dev \
+            libcurl4-openssl-dev \
+            libfreetype6-dev \
+            libx11-dev \
+            libxcomposite-dev \
+            libxcursor-dev \
+            libxext-dev \
+            libxinerama-dev \
+            libxrandr-dev \
+            libxrender-dev \
+            libwebkit2gtk-4.0-dev \
+            libglu1-mesa-dev \
+            mesa-common-dev
+          
+      - name: Clone JUCE
+        run: |
+          mkdir -p third_party
+          cd third_party
+          git clone --depth 1 https://github.com/juce-framework/JUCE.git
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Build web UI
+        run: |
+          cd ui
+          npm install
+          npm run build
+          
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
+        
+      - name: Configure CMake
+        run: |
+          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          
+      - name: Build plugin
+        run: cmake --build build
+        
+      - name: Create tarball installer
+        run: |
+          mkdir -p tarball_staging
+          
+          # Copy VST3
+          if [ -d "build/VialEffects_artefacts/Release/VST3/Vial Effects.vst3" ]; then
+            cp -R "build/VialEffects_artefacts/Release/VST3/Vial Effects.vst3" tarball_staging/
+          fi
+          
+          # Copy Standalone
+          if [ -d "build/VialEffects_artefacts/Release/Standalone" ]; then
+            cp -R "build/VialEffects_artefacts/Release/Standalone/Vial Effects" tarball_staging/ 2>/dev/null || \
+            find build/VialEffects_artefacts/Release/Standalone -type f -executable -exec cp {} tarball_staging/ \;
+          fi
+          
+          # Create tarball
+          cd tarball_staging
+          tar -czf ../build/installer/VialEffects-Linux.tar.gz *
+          
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VialEffects-Linux-Installer
+          path: build/installer/VialEffects-Linux.tar.gz
+          retention-days: 30
