@@ -4,12 +4,8 @@ project(VialEffects VERSION 0.1.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Reuse the JUCE 8 tree from third_party or sibling vial checkout.
+# JUCE 8 tree lives in third_party/JUCE
 set(VIAL_JUCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/JUCE" CACHE PATH "Path to JUCE")
-if(NOT EXISTS "${VIAL_JUCE_DIR}/CMakeLists.txt")
-    # Fallback to sibling vial checkout for local development
-    set(VIAL_JUCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../vial/JUCE" CACHE PATH "Path to JUCE" FORCE)
-endif()
 add_subdirectory("${VIAL_JUCE_DIR}" "${CMAKE_BINARY_DIR}/JUCE")
 
 # ----------------------------------------------------------------------------
