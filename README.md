@@ -39,14 +39,16 @@ audio in ─▶ Chorus ─▶ Delay ─▶ Reverb ─▶ audio out
 ## Building
 
 Prerequisites: CMake ≥ 3.22, a C++17 toolchain (MSVC on Windows), Node 18+, and
-the **WebView2 SDK** (Windows). The build reuses the JUCE tree from the sibling
-`vial` checkout (`../vial/JUCE`).
+the **WebView2 SDK** (Windows). JUCE 8 is cloned into `third_party/JUCE`.
 
 ```bash
-# 1. Build the web UI (produces ui/dist/index.html, embedded as binary data)
+# 1. Clone JUCE (one-time setup)
+git clone --depth 1 https://github.com/juce-framework/JUCE.git third_party/JUCE
+
+# 2. Build the web UI (produces ui/dist/index.html, embedded as binary data)
 cd ui && npm install && npm run build && cd ..
 
-# 2. Configure + build the plugin (Windows: run inside a VS dev shell / vcvars)
+# 3. Configure + build the plugin (Windows: run inside a VS dev shell / vcvars)
 cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
       -DJUCE_WEBVIEW2_PACKAGE_LOCATION=third_party/webview2
 cmake --build build
