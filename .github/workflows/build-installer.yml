@@ -1,0 +1,59 @@
+name: Build Windows Installer
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-installer:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout vial-effects
+        uses: actions/checkout@v4
+        
+      - name: Clone vial (JUCE dependency)
+        run: |
+          cd ..
+          git clone --depth 1 https://github.com/buchenberg/vial.git
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Build web UI
+        run: |
+          cd ui
+          npm install
+          npm run build
+          
+      - name: Install Inno Setup
+        run: |
+          choco install innosetup -y --no-progress
+          
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
+        
+      - name: Configure CMake
+        run: |
+          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release `
+                -DJUCE_WEBVIEW2_PACKAGE_LOCATION=third_party/webview2
+                
+      - name: Build plugin
+        run: cmake --build build
+        
+      - name: Build installer
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" `
+            /DConfiguration=Release `
+            /O"build\installer" `
+            installer\VialEffects.iss
+            
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VialEffects-Installer
+          path: build/installer/VialEffects-*-win64.exe
+          retention-days: 30

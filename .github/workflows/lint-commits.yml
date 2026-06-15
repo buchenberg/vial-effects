@@ -1,0 +1,49 @@
+name: Lint Commit Messages
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-commits:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate commit messages
+        run: |
+          # Get all commits in the PR (from merge-base to HEAD)
+          COMMITS=$(git log --format="%s" origin/main..HEAD)
+          
+          # Conventional Commits pattern:
+          # type(scope): description  OR  type: description
+          # Optional ! for breaking changes
+          PATTERN="^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?!?: .+"
+          
+          ERRORS=0
+          while IFS= read -r MSG; do
+            if [ -z "$MSG" ]; then
+              continue
+            fi
+            if ! echo "$MSG" | grep -qE "$PATTERN"; then
+              echo "✗ Invalid commit message: $MSG"
+              ERRORS=$((ERRORS + 1))
+            else
+              echo "✓ $MSG"
+            fi
+          done <<< "$COMMITS"
+          
+          if [ $ERRORS -gt 0 ]; then
+            echo ""
+            echo "Found $ERRORS commit(s) not following Conventional Commits spec."
+            echo "Format: type(scope): description"
+            echo "Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert"
+            echo "See CONTRIBUTING.md for details."
+            exit 1
+          fi
+          
+          echo ""
+          echo "All commit messages follow Conventional Commits spec ✓"
