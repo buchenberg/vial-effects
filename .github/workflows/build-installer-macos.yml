@@ -45,7 +45,7 @@ jobs:
         
       - name: Create DMG installer
         run: |
-          # Create staging directory
+          mkdir -p build/installer
           mkdir -p dmg_staging
           
           # Copy VST3

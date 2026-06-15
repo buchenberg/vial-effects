@@ -44,6 +44,14 @@ jobs:
 
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Download WebView2 NuGet package
+        run: |
+          mkdir -p third_party/webview2
+          curl -L -o third_party/webview2/webview2.nupkg \
+            "https://www.nuget.org/api/v2/package/Microsoft.Web.WebView2/1.0.3485.44"
+          cd third_party/webview2
+          unzip -o webview2.nupkg
           
       - name: Configure CMake
         run: |
