@@ -1,0 +1,74 @@
+name: Build macOS Installer
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-installer:
+    runs-on: macos-latest
+    defaults:
+      run:
+        shell: bash
+    
+    steps:
+      - name: Checkout vial-effects
+        uses: actions/checkout@v4
+        
+      - name: Clone JUCE
+        run: |
+          mkdir -p third_party
+          cd third_party
+          git clone --depth 1 https://github.com/juce-framework/JUCE.git
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Build web UI
+        run: |
+          cd ui
+          npm install
+          npm run build
+          
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
+        
+      - name: Configure CMake
+        run: |
+          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          
+      - name: Build plugin
+        run: cmake --build build
+        
+      - name: Create DMG installer
+        run: |
+          # Create staging directory
+          mkdir -p dmg_staging
+          
+          # Copy VST3
+          if [ -d "build/VialEffects_artefacts/Release/VST3/Vial Effects.vst3" ]; then
+            cp -R "build/VialEffects_artefacts/Release/VST3/Vial Effects.vst3" dmg_staging/
+          fi
+          
+          # Copy AU
+          if [ -d "build/VialEffects_artefacts/Release/AU/Vial Effects.component" ]; then
+            cp -R "build/VialEffects_artefacts/Release/AU/Vial Effects.component" dmg_staging/
+          fi
+          
+          # Copy Standalone
+          if [ -d "build/VialEffects_artefacts/Release/Standalone/Vial Effects.app" ]; then
+            cp -R "build/VialEffects_artefacts/Release/Standalone/Vial Effects.app" dmg_staging/
+          fi
+          
+          # Create DMG
+          hdiutil create -volname "Vial Effects" -srcfolder dmg_staging -ov -format UDZO build/installer/VialEffects-macOS.dmg
+          
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VialEffects-macOS-Installer
+          path: build/installer/VialEffects-macOS.dmg
+          retention-days: 30

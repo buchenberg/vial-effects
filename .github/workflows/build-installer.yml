@@ -41,10 +41,14 @@ jobs:
           
       - name: Setup CMake
         uses: lukka/get-cmake@latest
-        
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+          
       - name: Configure CMake
         run: |
           cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl \
                 -DJUCE_WEBVIEW2_PACKAGE_LOCATION=third_party/webview2
                 
       - name: Build plugin
