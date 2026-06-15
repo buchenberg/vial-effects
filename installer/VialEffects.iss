@@ -15,7 +15,7 @@
 #define AppVersion     GetVersionNumbersString("..\build\VialEffects_artefacts\" + Configuration + "\Standalone\Vial Effects.exe")
 
 [Setup]
-AppId={{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}
+AppId={{ACF81B98-D123-48BD-BA00-E83CEF31EB4B}
 AppName={#AppName}
 AppVersion={#AppVersion}
 AppPublisher={#AppPublisher}

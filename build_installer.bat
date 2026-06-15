@@ -13,7 +13,8 @@ REM   4. ../vial/JUCE checkout present
 REM =============================================================================
 setlocal
 
-set "WEBVIEW2_DIR=C:\Code"
+REM Set WEBVIEW2_DIR via environment variable or use default (third_party/webview2)
+if "%WEBVIEW2_DIR%"=="" set "WEBVIEW2_DIR=%~dp0third_party\webview2"
 set "BUILD_DIR=build"
 set "BUILD_TYPE=Release"
 

@@ -48,13 +48,14 @@ cd ui && npm install && npm run build && cd ..
 
 # 2. Configure + build the plugin (Windows: run inside a VS dev shell / vcvars)
 cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
-      -DJUCE_WEBVIEW2_PACKAGE_LOCATION=<dir containing Microsoft.Web.WebView2.*>
+      -DJUCE_WEBVIEW2_PACKAGE_LOCATION=third_party/webview2
 cmake --build build
 ```
 
 On Windows the WebView2 NuGet package must be extracted into a
 `Microsoft.Web.WebView2.<version>/` subfolder under the path passed to
-`JUCE_WEBVIEW2_PACKAGE_LOCATION`. The editor explicitly selects the WebView2
+`JUCE_WEBVIEW2_PACKAGE_LOCATION`. The default location is `third_party/webview2`.
+The editor explicitly selects the WebView2
 backend (the JUCE default on Windows is the legacy IE backend, which the resource
 provider does not support).
 

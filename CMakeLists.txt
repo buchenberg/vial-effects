@@ -126,8 +126,7 @@ add_test(NAME VialEffectsTests COMMAND VialEffectsTests)
 # ----------------------------------------------------------------------------
 if(WIN32)
     find_program(ISCC_EXECUTABLE iscc
-        HINTS "C:/Program Files (x86)/Inno Setup 6"
-              "$ENV{ProgramFiles}/Inno Setup 6"
+        HINTS "$ENV{ProgramFiles}/Inno Setup 6"
               "$ENV{ProgramFiles\(x86\)}/Inno Setup 6")
 
     if(ISCC_EXECUTABLE)
@@ -140,7 +139,6 @@ if(WIN32)
                     "${ISS_FILE}"
             DEPENDS VialEffects
             SOURCES "${ISS_FILE}"
-            BYPRODUCTS "${CMAKE_BINARY_DIR}/installer/VialEffects-*-win64.exe"
         )
         message(STATUS "Inno Setup found: ${ISCC_EXECUTABLE}")
     else()
