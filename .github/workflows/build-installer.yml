@@ -15,8 +15,13 @@ jobs:
         
       - name: Clone vial (JUCE dependency)
         run: |
-          cd ..
+          cd ${{ github.workspace }}/..
           git clone --depth 1 https://github.com/buchenberg/vial.git
+          
+      - name: Verify vial checkout
+        run: |
+          ls -la ${{ github.workspace }}/..
+          ls -la ${{ github.workspace }}/../vial/JUCE
           
       - name: Setup Node.js
         uses: actions/setup-node@v4
