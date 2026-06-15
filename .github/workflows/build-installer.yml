@@ -18,12 +18,12 @@ jobs:
         
       - name: Clone JUCE
         run: |
-          mkdir -p ${{ github.workspace }}/../vial
-          cd ${{ github.workspace }}/../vial
+          mkdir -p third_party
+          cd third_party
           git clone --depth 1 https://github.com/juce-framework/JUCE.git
           
       - name: Verify JUCE checkout
-        run: ls -la ${{ github.workspace }}/../vial/JUCE
+        run: ls -la third_party/JUCE
           
       - name: Setup Node.js
         uses: actions/setup-node@v4
