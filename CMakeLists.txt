@@ -120,3 +120,29 @@ target_link_libraries(VialEffectsTests PRIVATE
 
 enable_testing()
 add_test(NAME VialEffectsTests COMMAND VialEffectsTests)
+
+# ----------------------------------------------------------------------------
+# Windows installer (Inno Setup)
+# ----------------------------------------------------------------------------
+if(WIN32)
+    find_program(ISCC_EXECUTABLE iscc
+        HINTS "$ENV{ProgramFiles}/Inno Setup 6"
+              "$ENV{ProgramFiles\(x86\)}/Inno Setup 6")
+
+    if(ISCC_EXECUTABLE)
+        set(ISS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/installer/VialEffects.iss")
+        add_custom_target(installer ALL
+            COMMENT "Building Windows installer with Inno Setup..."
+            COMMAND "${ISCC_EXECUTABLE}"
+                    "/DConfiguration=$<CONFIG>"
+                    "/O${CMAKE_BINARY_DIR}/installer/"
+                    "${ISS_FILE}"
+            DEPENDS VialEffects
+            SOURCES "${ISS_FILE}"
+        )
+        message(STATUS "Inno Setup found: ${ISCC_EXECUTABLE}")
+    else()
+        message(STATUS "Inno Setup (iscc) not found — installer target disabled.\n"
+                "  Install from https://jrsoftware.org/isinfo.php and re-run cmake.")
+    endif()
+endif()
