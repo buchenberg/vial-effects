@@ -28,6 +28,11 @@ jobs:
             if [ -z "$MSG" ]; then
               continue
             fi
+            # Skip merge commits
+            if echo "$MSG" | grep -q "^Merge "; then
+              echo "⊘ Skipping merge commit: $MSG"
+              continue
+            fi
             if ! echo "$MSG" | grep -qE "$PATTERN"; then
               echo "✗ Invalid commit message: $MSG"
               ERRORS=$((ERRORS + 1))
