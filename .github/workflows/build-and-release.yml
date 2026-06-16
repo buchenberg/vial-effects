@@ -60,16 +60,19 @@ jobs:
             "https://www.nuget.org/api/v2/package/Microsoft.Web.WebView2/1.0.3485.44"
           cd third_party/webview2
           unzip -o webview2.nupkg
+          # JUCE's FindWebView2.cmake globs for *Microsoft.Web.WebView2* subdir
+          cd ..
+          mv webview2 "Microsoft.Web.WebView2.1.0.3485.44"
+          ls -la "Microsoft.Web.WebView2.1.0.3485.44/build/native/include/"
 
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Configure CMake
         run: |
-          WEBVIEW2_DIR="$(echo "$GITHUB_WORKSPACE" | sed 's|\\|/|g')/third_party/webview2"
           cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl \
-            -DWebView2_ROOT="$WEBVIEW2_DIR"
+            -DJUCE_WEBVIEW2_PACKAGE_LOCATION="${{ github.workspace }}/third_party"
 
       - name: Build plugin
         run: cmake --build build
@@ -187,8 +190,9 @@ jobs:
       - name: Configure CMake
         run: |
           GTK_CFLAGS="$(pkg-config --cflags gtk+-3.0)"
+          WEBKIT_CFLAGS="$(pkg-config --cflags webkit2gtk-4.1)"
           cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_CXX_FLAGS="$GTK_CFLAGS"
+            -DCMAKE_CXX_FLAGS="$GTK_CFLAGS $WEBKIT_CFLAGS"
 
       - name: Build plugin
         run: cmake --build build
