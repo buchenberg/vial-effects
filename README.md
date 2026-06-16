@@ -130,10 +130,18 @@ The `.pkg` installs:
 
 ## CI/CD
 
-On every push to `main`, [GitHub Actions](.github/workflows/build-and-release.yml)
-builds installers for all three platforms and creates a GitHub Release with the
-artifacts. Pull requests trigger build validation across all platforms (the
-release step is skipped).
+When a pull request is merged to `main`, [GitHub Actions](.github/workflows/build-and-release.yml)
+automatically:
+
+1. **Bumps the version** based on the PR title using [Conventional Commits](https://www.conventionalcommits.org/):
+   - `fix:` → patch (`0.1.0` → `0.1.1`)
+   - `feat:` → minor (`0.1.0` → `0.2.0`)
+   - `BREAKING CHANGE` or `!:` → major (`0.1.0` → `1.0.0`)
+2. **Builds installers** for Windows, macOS, and Linux in parallel
+3. **Creates a GitHub Release** with all three installers
+
+Pull requests that are still open trigger build validation across all platforms
+(the version bump and release steps are skipped).
 
 | Platform | Installer |
 |----------|-----------|
