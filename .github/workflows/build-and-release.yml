@@ -79,6 +79,7 @@ jobs:
 
       - name: Build Inno Setup installer
         run: |
+          mkdir -p build/installer
           "C:/Program Files (x86)/Inno Setup 6/ISCC.exe" \
             /DConfiguration=Release \
             /O"build/installer/" \

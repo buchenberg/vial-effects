@@ -84,6 +84,7 @@ jobs:
           fi
           
           # Create tarball
+          mkdir -p ../build/installer
           cd tarball_staging
           tar -czf ../build/installer/VialEffects-Linux.tar.gz *
           
