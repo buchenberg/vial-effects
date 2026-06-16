@@ -67,7 +67,7 @@ namespace vial {
       kNumSourceDestinations
     };
 
-    static SourceDestination toggleFilter1(SourceDestination current_destination, bool on) {
+    [[maybe_unused]] static SourceDestination toggleFilter1(SourceDestination current_destination, bool on) {
       if (on) {
         if (current_destination == vial::constants::kFilter2)
           return vial::constants::kDualFilters;
@@ -82,7 +82,7 @@ namespace vial {
       return current_destination;
     }
 
-    static SourceDestination toggleFilter2(SourceDestination current_destination, bool on) {
+    [[maybe_unused]] static SourceDestination toggleFilter2(SourceDestination current_destination, bool on) {
       if (on) {
         if (current_destination == vial::constants::kFilter1)
           return vial::constants::kDualFilters;

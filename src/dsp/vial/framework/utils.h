@@ -139,7 +139,7 @@ namespace vial {
     }
     
     force_inline mono_float mod(double value, double* divisor) {
-      return modf(value, divisor);
+      return static_cast<mono_float>(modf(value, divisor));
     }
 
     force_inline mono_float mod(float value, float* divisor) {
@@ -207,7 +207,7 @@ namespace vial {
     }
 
     force_inline int nextPowerOfTwo(mono_float value) {
-      return roundf(powf(2.0f, ceilf(logf(value) * kInvLogOf2)));
+      return static_cast<int>(roundf(powf(2.0f, ceilf(logf(value) * kInvLogOf2))));
     }
 
     force_inline bool isSilent(const mono_float* buffer, int length) {

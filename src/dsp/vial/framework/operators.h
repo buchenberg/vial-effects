@@ -398,7 +398,7 @@ namespace vial {
 
         virtual Processor* clone() const override { return new Clamp(*this); }
 
-        void process(int num_samples) override {
+        void process(int /*num_samples*/) override {
           output()->buffer[0] = utils::clamp(input()->at(0), min_, max_);
         }
 
@@ -413,7 +413,7 @@ namespace vial {
 
         virtual Processor* clone() const override { return new LowerBound(*this); }
 
-        void process(int num_samples) override {
+        void process(int /*num_samples*/) override {
           output()->buffer[0] = utils::max(input()->at(0), min_);
         }
         
@@ -429,7 +429,7 @@ namespace vial {
 
         virtual Processor* clone() const override { return new UpperBound(*this); }
 
-        void process(int num_samples) override {
+        void process(int /*num_samples*/) override {
           output()->buffer[0] = utils::min(input()->at(0), max_);
         }
         
@@ -446,7 +446,7 @@ namespace vial {
 
         virtual Processor* clone() const override { return new Add(*this); }
 
-        void process(int num_samples) override {
+        void process(int /*num_samples*/) override {
           output()->buffer[0] = input(0)->at(0) + input(1)->at(0);
         }
 
@@ -463,7 +463,7 @@ namespace vial {
 
         virtual Processor* clone() const override { return new Multiply(*this); }
 
-        void process(int num_samples) override {
+        void process(int /*num_samples*/) override {
           output()->buffer[0] = input(0)->at(0) * input(1)->at(0);
         }
 
@@ -486,7 +486,7 @@ namespace vial {
           return new Interpolate(*this);
         }
 
-        void process(int num_samples) override {
+        void process(int /*num_samples*/) override {
           poly_float from = input(kFrom)->at(0);
           poly_float to = input(kTo)->at(0);
           poly_float fraction = input(kFractional)->at(0);
@@ -502,7 +502,7 @@ namespace vial {
         Square() : Operator(1, 1, true) { }
         virtual Processor* clone() const override { return new Square(*this); }
 
-        void process(int num_samples) override {
+        void process(int /*num_samples*/) override {
           poly_float value = utils::max(input()->at(0), 0.0f);
           output()->buffer[0] = value * value;
         }
@@ -516,7 +516,7 @@ namespace vial {
         Cube() : Operator(1, 1, true) { }
         virtual Processor* clone() const override { return new Cube(*this); }
 
-        void process(int num_samples) override {
+        void process(int /*num_samples*/) override {
           poly_float value = utils::max(input()->at(0), 0.0f);
           output()->buffer[0] = value * value * value;
         }
@@ -530,7 +530,7 @@ namespace vial {
         Quart() : Operator(1, 1, true) { }
         virtual Processor* clone() const override { return new Quart(*this); }
 
-        void process(int num_samples) override {
+        void process(int /*num_samples*/) override {
           poly_float value = utils::max(input()->at(0), 0.0f);
           value *= value;
           output()->buffer[0] = value * value;
@@ -545,7 +545,7 @@ namespace vial {
         Quadratic(mono_float offset) : Operator(1, 1, true), offset_(offset) { }
         virtual Processor* clone() const override { return new Quadratic(*this); }
 
-        void process(int num_samples) override {
+        void process(int /*num_samples*/) override {
           poly_float value = utils::max(input()->at(0), 0.0f);
           output()->buffer[0] = value * value + offset_;
         }
@@ -561,7 +561,7 @@ namespace vial {
         Cubic(mono_float offset) : Operator(1, 1, true), offset_(offset) { }
         virtual Processor* clone() const override { return new Cubic(*this); }
 
-        void process(int num_samples) override {
+        void process(int /*num_samples*/) override {
           poly_float value = utils::max(input()->at(0), 0.0f);
           output()->buffer[0] = value * value * value + offset_;
         }
@@ -577,7 +577,7 @@ namespace vial {
         Quartic(mono_float offset) : Operator(1, 1, true), offset_(offset) { }
         virtual Processor* clone() const override { return new Quartic(*this); }
 
-        void process(int num_samples) override {
+        void process(int /*num_samples*/) override {
           poly_float value = utils::max(input()->at(0), 0.0f);
           value *= value;
           output()->buffer[0] = value * value + offset_;
@@ -594,7 +594,7 @@ namespace vial {
         Root(mono_float offset) : Operator(1, 1, true), offset_(offset) { }
         virtual Processor* clone() const override { return new Root(*this); }
 
-        void process(int num_samples) override {
+        void process(int /*num_samples*/) override {
           poly_float value = utils::max(input()->at(0), 0.0f);
           output()->buffer[0] = utils::sqrt(value) + offset_;
         }
@@ -614,7 +614,7 @@ namespace vial {
           return new ExponentialScale(*this);
         }
 
-        void process(int num_samples) override {
+        void process(int /*num_samples*/) override {
           output()->buffer[0] = futils::pow(scale_, utils::clamp(input()->at(0), min_, max_));
         }
 
@@ -636,7 +636,7 @@ namespace vial {
           return new VariableAdd(*this);
         }
 
-        void process(int num_samples) override {
+        void process(int /*num_samples*/) override {
           int num_inputs = static_cast<int>(inputs_->size());
           poly_float value = 0.0;
 
@@ -658,7 +658,7 @@ namespace vial {
           return new FrequencyToPhase(*this);
         }
 
-        void process(int num_samples) override {
+        void process(int /*num_samples*/) override {
           output()->buffer[0] = input()->at(0) * (1.0f / getSampleRate());
         }
 
@@ -674,8 +674,8 @@ namespace vial {
           return new FrequencyToSamples(*this);
         }
 
-        void process(int num_samples) override {
-          output()->buffer[0] = poly_float(getSampleRate()) / input()->at(0);
+        void process(int /*num_samples*/) override {
+          output()->buffer[0] = poly_float(static_cast<float>(getSampleRate())) / input()->at(0);
         }
 
       private:
@@ -690,8 +690,8 @@ namespace vial {
           return new TimeToSamples(*this);
         }
 
-        void process(int num_samples) override {
-          output()->buffer[0] = input()->at(0) * getSampleRate();
+        void process(int /*num_samples*/) override {
+          output()->buffer[0] = input()->at(0) * static_cast<float>(getSampleRate());
         }
 
       private:
@@ -706,7 +706,7 @@ namespace vial {
           return new MagnitudeScale(*this);
         }
 
-        void process(int num_samples) override {
+        void process(int /*num_samples*/) override {
           output()->buffer[0] = futils::dbToMagnitude(input()->at(0));
         }
 
@@ -722,7 +722,7 @@ namespace vial {
           return new MidiScale(*this);
         }
 
-        void process(int num_samples) override {
+        void process(int /*num_samples*/) override {
           output()->buffer[0] = utils::midiCentsToFrequency(input()->at(0));
         }
 
@@ -750,7 +750,7 @@ namespace vial {
           return new BilinearInterpolate(*this);
         }
 
-        void process(int num_samples) override {
+        void process(int /*num_samples*/) override {
           poly_float top = utils::interpolate(input(kTopLeft)->at(0),
                                               input(kTopRight)->at(0),
                                               input(kXPosition)->at(0));

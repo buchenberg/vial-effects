@@ -49,17 +49,17 @@ namespace vial {
       public:
         Feedback() : ::vial::Feedback(true), last_value_(0.0f) { }
 
-        void process(int num_samples) override {
+        void process(int /*num_samples*/) override {
           last_value_ = input()->at(0);
         }
 
         virtual Processor* clone() const override { return new cr::Feedback(*this); }
 
-        void refreshOutput(int num_samples) override {
+        void refreshOutput(int /*num_samples*/) override {
           output()->buffer[0] = last_value_;
         }
 
-        void reset(poly_mask reset_mask) override {
+        void reset(poly_mask /*reset_mask*/) override {
           last_value_ = 0.0f;
           output()->buffer[0] = last_value_;
         }

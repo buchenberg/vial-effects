@@ -313,7 +313,7 @@ namespace vial {
     }
   }
 
-  void TempoChooser::process(int num_samples) {
+  void TempoChooser::process(int /*num_samples*/) {
     static const poly_float dotted_ratio = 2.0f / 3.0f;
     static const poly_float triplet_ratio = 3.0f / 2.0f;
 

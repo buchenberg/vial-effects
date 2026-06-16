@@ -70,7 +70,7 @@ namespace vial {
         filter_gain_ = 0.0f;
         low_coefficient_ = 0.0f;
         high_coefficient_ = 0.0f;
-        period_ = utils::min(kDefaultPeriod, size - 1);
+        period_ = utils::min(kDefaultPeriod, static_cast<mono_float>(size - 1));
         hardReset();
       }
 

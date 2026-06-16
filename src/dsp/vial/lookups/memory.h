@@ -32,7 +32,7 @@ namespace vial {
       static constexpr int kExtraInterpolationValues = 3;
 
       MemoryTemplate(int size) : offset_(0) {
-        size_ = utils::nextPowerOfTwo(size);
+        size_ = utils::nextPowerOfTwo(static_cast<mono_float>(size));
         bitmask_ = size_ - 1;
         for (int i = 0; i < kChannels; ++i) {
           memories_[i] = std::make_unique<mono_float[]>(2 * size_);
@@ -121,7 +121,7 @@ namespace vial {
 
       force_inline poly_float get(poly_float past) const {
         VITAL_ASSERT(poly_float::lessThan(past, kMinPeriod).sum() == 0);
-        VITAL_ASSERT(poly_float::greaterThan(past, getMaxPeriod()).sum() == 0);
+        VITAL_ASSERT(poly_float::greaterThan(past, static_cast<float>(getMaxPeriod())).sum() == 0);
         poly_int past_index = utils::toInt(past);
         poly_float t = utils::toFloat(past_index) - past + 1.0f;
         matrix interpolation_matrix = utils::getCatmullInterpolationMatrix(t);
@@ -140,7 +140,7 @@ namespace vial {
 
       force_inline poly_float get(poly_float past) const {
         VITAL_ASSERT(poly_float::lessThan(past, 2.0f).anyMask() == 0);
-        VITAL_ASSERT(poly_float::greaterThan(past, getMaxPeriod()).anyMask() == 0);
+        VITAL_ASSERT(poly_float::greaterThan(past, static_cast<float>(getMaxPeriod())).anyMask() == 0);
         poly_int past_index = utils::toInt(past);
         poly_float t = utils::toFloat(past_index) - past + 1.0f;
         matrix interpolation_matrix = utils::getCatmullInterpolationMatrix(t);

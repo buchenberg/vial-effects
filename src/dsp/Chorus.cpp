@@ -63,7 +63,7 @@ int Chorus::getNextNumVoicePairs() {
 // Mirrors vial::ChorusModule::processWithInput (chorus_module.cpp:92-156).
 void Chorus::process (const poly_float* audio_in, int num_samples) {
     poly_float frequency = frequencyHz_;
-    poly_float delta_phase = (frequency * num_samples) * (1.0f / sampleRate_);
+    poly_float delta_phase = (frequency * static_cast<float>(num_samples)) * (1.0f / static_cast<float>(sampleRate_));
     phase_ = utils::mod (phase_ + delta_phase);
 
     poly_float* audio_out = output_.buffer;

@@ -36,11 +36,11 @@ namespace vial {
 
     force_inline poly_float exp2(poly_float exponent) {
       static constexpr mono_float kCoefficient0 = 1.0f;
-      static constexpr mono_float kCoefficient1 = 16970.0 / 24483.0;
-      static constexpr mono_float kCoefficient2 = 1960.0 / 8161.0;
-      static constexpr mono_float kCoefficient3 = 1360.0 / 24483.0;
-      static constexpr mono_float kCoefficient4 = 80.0 / 8161.0;
-      static constexpr mono_float kCoefficient5 = 32.0 / 24483.0;
+      static constexpr mono_float kCoefficient1 = 16970.0f / 24483.0f;
+      static constexpr mono_float kCoefficient2 = 1960.0f / 8161.0f;
+      static constexpr mono_float kCoefficient3 = 1360.0f / 24483.0f;
+      static constexpr mono_float kCoefficient4 = 80.0f / 8161.0f;
+      static constexpr mono_float kCoefficient5 = 32.0f / 24483.0f;
 
       poly_int integer = utils::roundToInt(exponent);
       poly_float t = exponent - utils::toFloat(integer);
@@ -52,12 +52,12 @@ namespace vial {
     }
 
     force_inline poly_float log2(poly_float value) {
-      static constexpr mono_float kCoefficient0 = -1819.0 / 651.0;
-      static constexpr mono_float kCoefficient1 = 5.0;
-      static constexpr mono_float kCoefficient2 = -10.0 / 3.0;
-      static constexpr mono_float kCoefficient3 = 10.0 / 7.0;
-      static constexpr mono_float kCoefficient4 = -1.0 / 3.0;
-      static constexpr mono_float kCoefficient5 = 1.0 / 31.0;
+      static constexpr mono_float kCoefficient0 = -1819.0f / 651.0f;
+      static constexpr mono_float kCoefficient1 = 5.0f;
+      static constexpr mono_float kCoefficient2 = -10.0f / 3.0f;
+      static constexpr mono_float kCoefficient3 = 10.0f / 7.0f;
+      static constexpr mono_float kCoefficient4 = -1.0f / 3.0f;
+      static constexpr mono_float kCoefficient5 = 1.0f / 31.0f;
 
       poly_int floored_log2 = utils::shiftRight<23>(utils::reinterpretToInt(value)) - 0x7f;
       poly_float t = (value & 0x7fffff) | (0x7f << 23);
@@ -69,8 +69,8 @@ namespace vial {
 
     force_inline poly_float cheapExp2(poly_float exponent) {
       static constexpr mono_float kCoefficient0 = 1.0f;
-      static constexpr mono_float kCoefficient1 = 12.0 / 17.0;
-      static constexpr mono_float kCoefficient2 = 4.0 / 17.0;
+      static constexpr mono_float kCoefficient1 = 12.0f / 17.0f;
+      static constexpr mono_float kCoefficient2 = 4.0f / 17.0f;
 
       poly_int integer = utils::roundToInt(exponent);
       poly_float t = exponent - utils::toFloat(integer);
@@ -81,9 +81,9 @@ namespace vial {
     }
 
     force_inline poly_float cheapLog2(poly_float value) {
-      static constexpr mono_float kCoefficient0 = -5.0 / 3.0;
-      static constexpr mono_float kCoefficient1 = 2.0;
-      static constexpr mono_float kCoefficient2 = -1.0 / 3.0;
+      static constexpr mono_float kCoefficient0 = -5.0f / 3.0f;
+      static constexpr mono_float kCoefficient1 = 2.0f;
+      static constexpr mono_float kCoefficient2 = -1.0f / 3.0f;
 
       poly_int floored_log2 = utils::shiftRight<23>(utils::reinterpretToInt(value)) - 0x7f;
       poly_float t = (value & 0x7fffff) | (0x7f << 23);

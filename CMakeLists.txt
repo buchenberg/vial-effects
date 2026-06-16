@@ -122,27 +122,32 @@ enable_testing()
 add_test(NAME VialEffectsTests COMMAND VialEffectsTests)
 
 # ----------------------------------------------------------------------------
-# Windows installer (Inno Setup)
+# Windows installer (WiX)
 # ----------------------------------------------------------------------------
 if(WIN32)
-    find_program(ISCC_EXECUTABLE iscc
-        HINTS "$ENV{ProgramFiles}/Inno Setup 6"
-              "$ENV{ProgramFiles\(x86\)}/Inno Setup 6")
+    find_program(CANDLE_EXECUTABLE candle
+        HINTS "C:/Program Files (x86)/WiX Toolset v3.14/bin")
 
-    if(ISCC_EXECUTABLE)
-        set(ISS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/installer/VialEffects.iss")
+    find_program(LIGHT_EXECUTABLE light
+        HINTS "C:/Program Files (x86)/WiX Toolset v3.14/bin")
+
+    if(CANDLE_EXECUTABLE AND LIGHT_EXECUTABLE)
+        set(WXS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/installer/VialEffects.wxs")
         add_custom_target(installer ALL
-            COMMENT "Building Windows installer with Inno Setup..."
-            COMMAND "${ISCC_EXECUTABLE}"
-                    "/DConfiguration=$<CONFIG>"
-                    "/O${CMAKE_BINARY_DIR}/installer/"
-                    "${ISS_FILE}"
+            COMMENT "Building Windows installer with WiX..."
+            COMMAND "${CANDLE_EXECUTABLE}" -arch x64 -ext WixUIExtension
+                    -dConfiguration=$<CONFIG>
+                    -dBuildDir="${CMAKE_BINARY_DIR}"
+                    -o "${CMAKE_BINARY_DIR}/installer/"
+                    "${WXS_FILE}"
+            COMMAND "${LIGHT_EXECUTABLE}" -ext WixUIExtension -sval
+                    -o "${CMAKE_BINARY_DIR}/installer/VialEffects-$<CONFIG>-win64.msi"
+                    "${CMAKE_BINARY_DIR}/installer/VialEffects.wixobj"
             DEPENDS VialEffects
-            SOURCES "${ISS_FILE}"
+            SOURCES "${WXS_FILE}"
         )
-        message(STATUS "Inno Setup found: ${ISCC_EXECUTABLE}")
+        message(STATUS "WiX Toolset found: ${CANDLE_EXECUTABLE}")
     else()
-        message(STATUS "Inno Setup (iscc) not found — installer target disabled.\n"
-                "  Install from https://jrsoftware.org/isinfo.php and re-run cmake.")
+        message(STATUS "WiX Toolset not found — installer target disabled.")
     endif()
 endif()
