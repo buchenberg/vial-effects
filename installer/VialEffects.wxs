@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product
+    Id="*"
+    Name="Vial Effects"
+    Language="1033"
+    Version="!(bind.FileVersion.VialEffectsExe)"
+    Manufacturer="buchenberg"
+    UpgradeCode="ACF81B98-D123-48BD-BA00-E83CEF31EB4B">
+
+    <Package
+      InstallerVersion="500"
+      Compressed="yes"
+      InstallScope="perMachine"
+      Platform="x64" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="CommonFilesFolder">
+        <Directory Id="VST3FOLDER" Name="VST3">
+          <Directory Id="VST3DIR" Name="Vial Effects.vst3" />
+        </Directory>
+      </Directory>
+      <Directory Id="ProgramFiles64Folder">
+        <Directory Id="MANUFACTURERFOLDER" Name="buchenberg">
+          <Directory Id="INSTALLFOLDER" Name="Vial Effects" />
+        </Directory>
+      </Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="STARTMENUFOLDER" Name="buchenberg\Vial Effects" />
+      </Directory>
+    </Directory>
+
+    <Feature Id="VST3" Title="VST3 Plugin (64-bit)" Level="1">
+      <ComponentGroupRef Id="VST3Components" />
+    </Feature>
+    <Feature Id="Standalone" Title="Standalone Application" Level="1">
+      <ComponentGroupRef Id="StandaloneComponents" />
+    </Feature>
+
+    <ComponentGroup Id="StandaloneComponents" Directory="INSTALLFOLDER">
+      <Component Id="VialEffectsExe" Guid="*">
+        <File Id="VialEffectsExe"
+              Source="..\build\VialEffects_artefacts\Release\Standalone\Vial Effects.exe"
+              KeyPath="yes" />
+        <Shortcut Id="StartMenuShortcut"
+                  Name="Vial Effects"
+                  Directory="STARTMENUFOLDER"
+                  WorkingDirectory="INSTALLFOLDER"
+                  Advertise="no" />
+        <Shortcut Id="UninstallShortcut"
+                  Name="Uninstall Vial Effects"
+                  Target="[System64Folder]msiexec.exe"
+                  Arguments="/x [ProductCode]"
+                  Directory="STARTMENUFOLDER" />
+      </Component>
+    </ComponentGroup>
+
+    <UIRef Id="WixUI_FeatureTree" />
+    <UIRef Id="WixUI_ErrorProgressText" />
+  </Product>
+</Wix>

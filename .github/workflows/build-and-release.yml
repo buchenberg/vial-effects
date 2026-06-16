@@ -110,9 +110,6 @@ jobs:
           mkdir -p third_party
           git clone --depth 1 https://github.com/juce-framework/JUCE.git third_party/JUCE
 
-      - name: Install Inno Setup
-        run: choco install innosetup -y --no-progress
-
       - name: Download WebView2 NuGet
         run: |
           mkdir -p third_party/webview2
@@ -135,15 +132,32 @@ jobs:
       - name: Build plugin
         run: cmake --build build
 
-      - name: Build Inno Setup installer
+      - name: Build WiX installer (.msi)
+        shell: pwsh
         run: |
-          mkdir -p build/installer
-          cmd //c '"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /DConfiguration=Release /Obuild\installer\ installer\VialEffects.iss'
+          $WIX = "C:\Program Files (x86)\WiX Toolset v3.14\bin"
+          New-Item -ItemType Directory -Force -Path build\installer | Out-Null
+
+          # Harvest VST3 directory tree
+          & "$WIX\heat.exe" dir "build\VialEffects_artefacts\Release\VST3\Vial Effects.vst3" `
+            -out build\installer\vst3.wxs -gg -sfrag -dr VST3DIR -cg VST3Components `
+            -var var.VST3SourceDir -template fragment
+
+          # Compile
+          & "$WIX\candle.exe" -arch x64 `
+            -dVST3SourceDir="build\VialEffects_artefacts\Release\VST3\Vial Effects.vst3" `
+            installer\VialEffects.wxs build\installer\vst3.wxs `
+            -out build\installer\
+
+          # Link
+          & "$WIX\light.exe" `
+            build\installer\VialEffects.wixobj build\installer\vst3.wixobj `
+            -out "build\installer\VialEffects-${{ needs.version.outputs.new_version }}-win64.msi"
 
       - uses: actions/upload-artifact@v4
         with:
           name: VialEffects-${{ needs.version.outputs.new_version }}-win64
-          path: build/installer/VialEffects-*-win64.exe
+          path: build/installer/VialEffects-*.msi
           retention-days: 30
 
   # --------------------------------------------------------------------------
@@ -304,7 +318,7 @@ jobs:
             ### Installers
             | Platform | Format | Contents |
             |----------|--------|----------|
-            | Windows | `.exe` | VST3 + Standalone |
+            | Windows | `.msi` | VST3 + Standalone |
             | macOS   | `.pkg` | VST3 + AU + Standalone |
             | Linux   | `.tar.gz` | VST3 + Standalone |
           files: |

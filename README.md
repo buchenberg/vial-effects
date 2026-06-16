@@ -145,7 +145,7 @@ Pull requests that are still open trigger build validation across all platforms
 
 | Platform | Installer |
 |----------|-----------|
-| Windows | `.exe` (Inno Setup) |
+| Windows | `.msi` (WiX) |
 | macOS | `.pkg` (pkgbuild) |
 | Linux | `.tar.gz` |
 
