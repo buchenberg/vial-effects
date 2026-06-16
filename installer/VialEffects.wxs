@@ -29,7 +29,9 @@
         </Directory>
       </Directory>
       <Directory Id="ProgramMenuFolder">
-        <Directory Id="STARTMENUFOLDER" Name="buchenberg\Vial Effects" />
+        <Directory Id="StartMenuManufacturer" Name="buchenberg">
+          <Directory Id="STARTMENUFOLDER" Name="Vial Effects" />
+        </Directory>
       </Directory>
     </Directory>
 
