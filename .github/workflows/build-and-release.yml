@@ -3,7 +3,7 @@ name: Build and Release
 on:
   pull_request:
     branches: [main]
-    types: [opened, synchronize, reopened, closed]
+    types: [closed]
   workflow_dispatch:
     inputs:
       bump:
@@ -91,6 +91,7 @@ jobs:
   # --------------------------------------------------------------------------
   build-windows:
     needs: version
+    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
     runs-on: windows-latest
     defaults:
       run:
@@ -165,6 +166,7 @@ jobs:
   # --------------------------------------------------------------------------
   build-macos:
     needs: version
+    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -219,6 +221,7 @@ jobs:
   # --------------------------------------------------------------------------
   build-linux:
     needs: version
+    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
