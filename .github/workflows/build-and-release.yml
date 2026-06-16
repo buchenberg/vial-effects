@@ -3,7 +3,7 @@ name: Build and Release
 on:
   pull_request:
     branches: [main]
-    types: [closed]
+    types: [opened, synchronize, reopened, closed]
   workflow_dispatch:
     inputs:
       bump:
@@ -23,7 +23,6 @@ jobs:
   # --------------------------------------------------------------------------
   version:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
     outputs:
       old_version: ${{ steps.ver.outputs.old_version }}
       new_version: ${{ steps.ver.outputs.new_version }}
@@ -73,9 +72,10 @@ jobs:
           echo "::notice::Version bump: ${OLD} → ${NEW} (${BUMP})"
 
       - name: Bump version in source files
+        if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
         run: |
-          NEW="${{ steps.ver.outputs.new }}"
-          OLD="${{ steps.ver.outputs.old }}"
+          NEW="${{ steps.ver.outputs.new_version }}"
+          OLD="${{ steps.ver.outputs.old_version }}"
 
           # CMakeLists.txt
           sed -i "s/project(VialEffects VERSION ${OLD}/project(VialEffects VERSION ${NEW}/" CMakeLists.txt
@@ -84,6 +84,7 @@ jobs:
           sed -i "s/\"version\": \"${OLD}\"/\"version\": \"${NEW}\"/" ui/package.json
 
       - name: Commit and push version bump
+        if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -105,7 +106,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ needs.version.outputs.tag }}
 
       - uses: actions/setup-node@v4
         with:
@@ -168,7 +168,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ needs.version.outputs.tag }}
 
       - uses: actions/setup-node@v4
         with:
@@ -225,7 +224,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ needs.version.outputs.tag }}
 
       - name: Install system dependencies
         run: |
@@ -295,13 +293,13 @@ jobs:
   # --------------------------------------------------------------------------
   release:
     needs: [version, build-windows, build-macos, build-linux]
+    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ needs.version.outputs.tag }}
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
