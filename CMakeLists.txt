@@ -133,7 +133,7 @@ if(WIN32)
 
     if(CANDLE_EXECUTABLE AND LIGHT_EXECUTABLE)
         set(WXS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/installer/VialEffects.wxs")
-        add_custom_target(installer ALL
+        add_custom_target(installer
             COMMENT "Building Windows installer with WiX..."
             COMMAND "${CANDLE_EXECUTABLE}" -arch x64 -ext WixUIExtension
                     -dConfiguration=$<CONFIG>
