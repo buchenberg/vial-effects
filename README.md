@@ -124,6 +124,7 @@ pkgbuild --root pkg_root \
 ```
 
 The `.pkg` installs:
+
 - VST3 → `/Library/Audio/Plug-Ins/VST3/Vial Effects.vst3`
 - AU → `/Library/Audio/Plug-Ins/Components/Vial Effects.component`
 - Standalone → `/Applications/Vial Effects.app`
@@ -144,7 +145,7 @@ Pull requests that are still open trigger build validation across all platforms
 (the version bump and release steps are skipped).
 
 | Platform | Installer |
-|----------|-----------|
+| ---------- | ----------- |
 | Windows | `.msi` (WiX) |
 | macOS | `.pkg` (pkgbuild) |
 | Linux | `.tar.gz` |
