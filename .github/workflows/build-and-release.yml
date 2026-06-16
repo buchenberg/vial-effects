@@ -1,9 +1,8 @@
 name: Build and Release
 
 on:
-  pull_request:
+  push:
     branches: [main]
-    types: [closed]
   workflow_dispatch:
     inputs:
       bump:
@@ -37,10 +36,10 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "type=${{ inputs.bump }}" >> "$GITHUB_OUTPUT"
           else
-            TITLE="${{ github.event.pull_request.title }}"
-            if echo "$TITLE" | grep -qiE 'BREAKING[ -]CHANGE|!:'; then
+            TITLE="${{ github.event.head_commit.message }}"
+            if echo "$TITLE" | head -1 | grep -qiE 'BREAKING[ -]CHANGE|!:'; then
               echo "type=major" >> "$GITHUB_OUTPUT"
-            elif echo "$TITLE" | grep -qiE '^feat[\(:]'; then
+            elif echo "$TITLE" | head -1 | grep -qiE '^feat[\\(:]'; then
               echo "type=minor" >> "$GITHUB_OUTPUT"
             else
               echo "type=patch" >> "$GITHUB_OUTPUT"
@@ -69,7 +68,7 @@ jobs:
           echo "::notice::Version bump: ${OLD} -> ${NEW} (${BUMP})"
 
       - name: Bump version in source files
-        if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         run: |
           NEW="${{ steps.ver.outputs.new_version }}"
           OLD="${{ steps.ver.outputs.old_version }}"
@@ -77,7 +76,7 @@ jobs:
           sed -i "s/\"version\": \"${OLD}\"/\"version\": \"${NEW}\"/" ui/package.json
 
       - name: Commit and push version bump
-        if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -91,7 +90,7 @@ jobs:
   # --------------------------------------------------------------------------
   build-windows:
     needs: version
-    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: windows-latest
     defaults:
       run:
@@ -166,7 +165,7 @@ jobs:
   # --------------------------------------------------------------------------
   build-macos:
     needs: version
-    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -221,7 +220,7 @@ jobs:
   # --------------------------------------------------------------------------
   build-linux:
     needs: version
-    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -294,7 +293,7 @@ jobs:
   # --------------------------------------------------------------------------
   release:
     needs: [version, build-windows, build-macos, build-linux]
-    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -316,7 +315,7 @@ jobs:
 
             **${{ needs.version.outputs.old_version }} → ${{ needs.version.outputs.new_version }}** (${{ needs.version.outputs.bump }})
 
-            Merged from PR [#${{ github.event.pull_request.number }}](${{ github.event.pull_request.html_url }}): ${{ github.event.pull_request.title }}
+            Commit: [${{ github.event.head_commit.id }}](${{ github.event.head_commit.url }}) — ${{ github.event.head_commit.message }}
 
             ### Installers
             | Platform | Format | Contents |
