@@ -144,13 +144,13 @@ jobs:
             -var var.VST3SourceDir -template fragment
 
           # Compile
-          & "$WIX\candle.exe" -arch x64 `
+          & "$WIX\candle.exe" -arch x64 -ext WixUIExtension `
             -dVST3SourceDir="build\VialEffects_artefacts\Release\VST3\Vial Effects.vst3" `
             installer\VialEffects.wxs build\installer\vst3.wxs `
             -out build\installer\
 
           # Link
-          & "$WIX\light.exe" `
+          & "$WIX\light.exe" -ext WixUIExtension -sval `
             build\installer\VialEffects.wixobj build\installer\vst3.wixobj `
             -out "build\installer\VialEffects-${{ needs.version.outputs.new_version }}-win64.msi"
 

@@ -70,31 +70,41 @@ ctest --test-dir build          # native DSP tests (also: build/.../VialEffectsT
 cd ui && npm test && npm run e2e # Vitest component tests + Playwright e2e/visual
 ```
 
-## Windows Installer
+## Windows Installer (.msi)
 
-An [Inno Setup](https://jrsoftware.org/isinfo.php) script is included at
-`installer/VialEffects.iss`. After building the plugin, run:
+A [WiX Toolset](https://wixtoolset.org/) source file is included at
+`installer/VialEffects.wxs`. The `.msi` is built automatically in CI. To build
+it locally (requires WiX Toolset v3.14+):
 
-```bash
-# Build the installer (requires Inno Setup 6+)
-iscc /DConfiguration=Release installer\VialEffects.iss
-#        ^^^^^^^^ change to Debug if you built the Debug configuration
+```powershell
+$WIX = "C:\Program Files (x86)\WiX Toolset v3.14\bin"
+
+# Harvest the VST3 directory tree
+& "$WIX\heat.exe" dir "build\VialEffects_artefacts\Release\VST3\Vial Effects.vst3" `
+  -out build\installer\vst3.wxs -gg -sfrag -dr VST3DIR -cg VST3Components `
+  -var var.VST3SourceDir -template fragment
+
+# Compile
+& "$WIX\candle.exe" -arch x64 -ext WixUIExtension `
+  -dVST3SourceDir="build\VialEffects_artefacts\Release\VST3\Vial Effects.vst3" `
+  installer\VialEffects.wxs build\installer\vst3.wxs -out build\installer\
+
+# Link
+& "$WIX\light.exe" -ext WixUIExtension -sval `
+  build\installer\VialEffects.wixobj build\installer\vst3.wixobj `
+  -out build\installer\VialEffects-0.1.0-win64.msi
 ```
 
-The installer is also wired into CMake as an `installer` target. If Inno Setup
-is detected at configure time, building the project also produces the installer:
-
-```bash
-cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release ...
-cmake --build build              # builds VialEffects + the installer
-```
-
-The output `.exe` lands in `build/installer/`.
+The `.msi` installs:
+- VST3 → `C:\Program Files\Common Files\VST3\Vial Effects.vst3`
+- Standalone → `C:\Program Files\buchenberg\Vial Effects\`
+- Start Menu shortcuts
+- Full uninstall via Add/Remove Programs
 
 ### Installer features
 
 - **Component selection** — VST3 plugin only, standalone only, or both.
-- Installs VST3 to the system-wide VST3 folder (`C:\Program Files\Common Files\VST3\`).
+- Installs VST3 to the system-wide VST3 folder.
 - Installs the standalone to `Program Files\buchenberg\Vial Effects\` with
   Start Menu shortcuts.
 - Full uninstall support via Add/Remove Programs.

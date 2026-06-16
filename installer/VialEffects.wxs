@@ -45,7 +45,7 @@
     <ComponentGroup Id="StandaloneComponents" Directory="INSTALLFOLDER">
       <Component Id="VialEffectsExe" Guid="*">
         <File Id="VialEffectsExe"
-              Source="..\build\VialEffects_artefacts\Release\Standalone\Vial Effects.exe"
+              Source="build\VialEffects_artefacts\Release\Standalone\Vial Effects.exe"
               KeyPath="yes" />
         <Shortcut Id="StartMenuShortcut"
                   Name="Vial Effects"
