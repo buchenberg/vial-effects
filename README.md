@@ -154,3 +154,4 @@ Pull requests that are still open trigger build validation across all platforms
 Derived from vial, which is itself based on Matt Tytel's **Vital**. The vendored
 DSP retains its original GPLv3 headers, so this project is distributed under the
 **GNU General Public License v3** — see [LICENSE](LICENSE).
+# test trigger
