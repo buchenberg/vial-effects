@@ -132,14 +132,14 @@ The `.pkg` installs:
 
 On every push to `main`, [GitHub Actions](.github/workflows/build-and-release.yml)
 builds installers for all three platforms and creates a GitHub Release with the
-artifacts. Pull requests trigger per-platform build checks (no release).
+artifacts. Pull requests trigger build validation across all platforms (the
+release step is skipped).
 
-| Platform | Installer | Build Workflow |
-|----------|-----------|----------------|
-| Windows | `.exe` (Inno Setup) | `build-installer.yml` |
-| macOS | `.pkg` (pkgbuild) | `build-installer-macos.yml` |
-| Linux | `.tar.gz` | `build-installer-linux.yml` |
-| **Release** | all three | `build-and-release.yml` |
+| Platform | Installer |
+|----------|-----------|
+| Windows | `.exe` (Inno Setup) |
+| macOS | `.pkg` (pkgbuild) |
+| Linux | `.tar.gz` |
 
 ## Licence & attribution
 
