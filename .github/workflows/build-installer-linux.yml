@@ -18,10 +18,11 @@ jobs:
       - name: Checkout vial-effects
         uses: actions/checkout@v4
         
-      - name: Install dependencies
+      - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
+            pkg-config \
             libasound2-dev \
             libcurl4-openssl-dev \
             libfreetype6-dev \

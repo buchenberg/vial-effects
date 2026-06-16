@@ -43,7 +43,7 @@ jobs:
         
       - name: Create .pkg installer
         run: |
-          VERSION=$(grep -oP 'project\(VialEffects VERSION \K[0-9.]+' CMakeLists.txt)
+          VERSION=$(sed -n 's/.*project(VialEffects VERSION \([0-9.]*\).*/\1/p' CMakeLists.txt)
 
           # Stage files under a directory tree mirroring the install locations
           mkdir -p pkg_root/Library/Audio/Plug-Ins/VST3
