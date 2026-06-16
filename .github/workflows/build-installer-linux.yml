@@ -52,7 +52,7 @@ jobs:
       - name: Build web UI
         run: |
           cd ui
-          npm install
+          npm ci
           npm run build
           
       - name: Setup CMake
@@ -60,12 +60,14 @@ jobs:
         
       - name: Configure CMake
         run: |
-          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          GTK_CFLAGS="$(pkg-config --cflags gtk+-3.0)"
+          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_CXX_FLAGS="$GTK_CFLAGS"
           
       - name: Build plugin
         run: cmake --build build
         
-      - name: Create tarball installer
+      - name: Create tarball
         run: |
           mkdir -p tarball_staging
           

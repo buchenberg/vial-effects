@@ -69,7 +69,7 @@ jobs:
           WEBVIEW2_DIR="$(echo "$GITHUB_WORKSPACE" | sed 's|\\|/|g')/third_party/webview2"
           cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl \
-            -DJUCE_WEBVIEW2_PACKAGE_LOCATION="$WEBVIEW2_DIR"
+            -DWebView2_ROOT="$WEBVIEW2_DIR"
 
       - name: Build plugin
         run: cmake --build build
@@ -185,7 +185,10 @@ jobs:
           git clone --depth 1 https://github.com/juce-framework/JUCE.git third_party/JUCE
 
       - name: Configure CMake
-        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+        run: |
+          GTK_CFLAGS="$(pkg-config --cflags gtk+-3.0)"
+          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_CXX_FLAGS="$GTK_CFLAGS"
 
       - name: Build plugin
         run: cmake --build build
