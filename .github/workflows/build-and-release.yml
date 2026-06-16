@@ -1,0 +1,255 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  # --------------------------------------------------------------------------
+  # Extract version from CMakeLists.txt so all jobs use the same number
+  # --------------------------------------------------------------------------
+  extract-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.ver.outputs.version }}
+      tag: ${{ steps.ver.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: ver
+        run: |
+          VERSION=$(grep -oP 'project\(VialEffects VERSION \K[0-9.]+' CMakeLists.txt)
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${VERSION}-build-${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+
+  # --------------------------------------------------------------------------
+  # Windows — Inno Setup .exe installer
+  # --------------------------------------------------------------------------
+  build-windows:
+    needs: extract-version
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build web UI
+        run: cd ui && npm ci && npm run build
+
+      - name: Clone JUCE
+        run: |
+          mkdir -p third_party
+          git clone --depth 1 https://github.com/juce-framework/JUCE.git third_party/JUCE
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y --no-progress
+
+      - name: Download WebView2 NuGet
+        run: |
+          mkdir -p third_party/webview2
+          curl -L -o third_party/webview2/webview2.nupkg \
+            "https://www.nuget.org/api/v2/package/Microsoft.Web.WebView2/1.0.3485.44"
+          cd third_party/webview2
+          unzip -o webview2.nupkg
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Configure CMake
+        run: |
+          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl \
+            -DJUCE_WEBVIEW2_PACKAGE_LOCATION=third_party/webview2
+
+      - name: Build plugin
+        run: cmake --build build
+
+      - name: Build Inno Setup installer
+        run: |
+          "C:/Program Files (x86)/Inno Setup 6/ISCC.exe" \
+            /DConfiguration=Release \
+            /O"build/installer/" \
+            installer/VialEffects.iss
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VialEffects-${{ needs.extract-version.outputs.version }}-win64
+          path: build/installer/VialEffects-*-win64.exe
+          retention-days: 30
+
+  # --------------------------------------------------------------------------
+  # macOS — flat .pkg installer (VST3 + AU + Standalone)
+  # --------------------------------------------------------------------------
+  build-macos:
+    needs: extract-version
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build web UI
+        run: cd ui && npm ci && npm run build
+
+      - name: Clone JUCE
+        run: |
+          mkdir -p third_party
+          git clone --depth 1 https://github.com/juce-framework/JUCE.git third_party/JUCE
+
+      - name: Configure CMake
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build plugin
+        run: cmake --build build
+
+      - name: Create .pkg installer
+        run: |
+          VERSION="${{ needs.extract-version.outputs.version }}"
+
+          # Stage files under a directory tree mirroring the install locations
+          mkdir -p pkg_root/Library/Audio/Plug-Ins/VST3
+          mkdir -p pkg_root/Library/Audio/Plug-Ins/Components
+          mkdir -p pkg_root/Applications
+
+          cp -R "build/VialEffects_artefacts/Release/VST3/Vial Effects.vst3" \
+            "pkg_root/Library/Audio/Plug-Ins/VST3/"
+          cp -R "build/VialEffects_artefacts/Release/AU/Vial Effects.component" \
+            "pkg_root/Library/Audio/Plug-Ins/Components/"
+          cp -R "build/VialEffects_artefacts/Release/Standalone/Vial Effects.app" \
+            "pkg_root/Applications/"
+
+          mkdir -p build/installer
+          pkgbuild --root pkg_root \
+            --identifier com.buchenberg.vialeffects \
+            --version "${VERSION}" \
+            --install-location / \
+            "build/installer/VialEffects-${VERSION}-macOS.pkg"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VialEffects-${{ needs.extract-version.outputs.version }}-macOS
+          path: build/installer/VialEffects-*-macOS.pkg
+          retention-days: 30
+
+  # --------------------------------------------------------------------------
+  # Linux — tarball (VST3 + Standalone)
+  # --------------------------------------------------------------------------
+  build-linux:
+    needs: extract-version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libasound2-dev \
+            libcurl4-openssl-dev \
+            libfreetype6-dev \
+            libx11-dev \
+            libxcomposite-dev \
+            libxcursor-dev \
+            libxext-dev \
+            libxinerama-dev \
+            libxrandr-dev \
+            libxrender-dev \
+            libwebkit2gtk-4.1-dev \
+            libgtk-3-dev \
+            libglu1-mesa-dev \
+            mesa-common-dev
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build web UI
+        run: cd ui && npm ci && npm run build
+
+      - name: Clone JUCE
+        run: |
+          mkdir -p third_party
+          git clone --depth 1 https://github.com/juce-framework/JUCE.git third_party/JUCE
+
+      - name: Configure CMake
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build plugin
+        run: cmake --build build
+
+      - name: Create tarball
+        run: |
+          VERSION="${{ needs.extract-version.outputs.version }}"
+          mkdir -p tarball_staging
+
+          # VST3
+          if [ -d "build/VialEffects_artefacts/Release/VST3/Vial Effects.vst3" ]; then
+            cp -R "build/VialEffects_artefacts/Release/VST3/Vial Effects.vst3" tarball_staging/
+          fi
+
+          # Standalone
+          if [ -f "build/VialEffects_artefacts/Release/Standalone/Vial Effects" ]; then
+            cp "build/VialEffects_artefacts/Release/Standalone/Vial Effects" tarball_staging/
+          fi
+
+          mkdir -p build/installer
+          tar -czf "build/installer/VialEffects-${VERSION}-Linux.tar.gz" -C tarball_staging .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VialEffects-${{ needs.extract-version.outputs.version }}-Linux
+          path: build/installer/VialEffects-*-Linux.tar.gz
+          retention-days: 30
+
+  # --------------------------------------------------------------------------
+  # Release — collect all artifacts and create a GitHub Release
+  # --------------------------------------------------------------------------
+  release:
+    needs: [extract-version, build-windows, build-macos, build-linux]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Show artifact layout
+        run: find artifacts -type f
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.extract-version.outputs.tag }}
+          name: Vial Effects ${{ needs.extract-version.outputs.version }}
+          body: |
+            Automated build from push to `main` (${{ github.sha }}).
+
+            ### Installers
+            | Platform | Format | Contents |
+            |----------|--------|----------|
+            | **Windows** | `.exe` | VST3 + Standalone |
+            | **macOS**   | `.pkg` | VST3 + AU + Standalone |
+            | **Linux**   | `.tar.gz` | VST3 + Standalone |
+
+            Built from commit [`${{ github.sha }}`](https://github.com/${{ github.repository }}/commit/${{ github.sha }}).
+          files: |
+            artifacts/**/*
+          draft: false
+          prerelease: false
+          make_latest: true

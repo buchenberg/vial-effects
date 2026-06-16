@@ -8,6 +8,8 @@ synth. The user interface is a React app rendered in a JUCE 8
 `WebBrowserComponent`, styled after vial's effects rack (three stacked panels:
 Chorus, Delay, Reverb).
 
+![Vial Effects UI](docs/Vial_Effects_UI.png)
+
 > **Status:** Builds and runs (VST3 + Standalone on Windows; AU on macOS). The
 > DSP, plugin, WebView UI, and tests are all in place. See
 > [CHANGELOG.md](CHANGELOG.md).
@@ -96,6 +98,48 @@ The output `.exe` lands in `build/installer/`.
 - Installs the standalone to `Program Files\buchenberg\Vial Effects\` with
   Start Menu shortcuts.
 - Full uninstall support via Add/Remove Programs.
+
+## macOS Installer
+
+A flat `.pkg` installer is built automatically by CI. To build it locally:
+
+```bash
+# After building the plugin:
+mkdir -p pkg_root/Library/Audio/Plug-Ins/VST3
+mkdir -p pkg_root/Library/Audio/Plug-Ins/Components
+mkdir -p pkg_root/Applications
+
+cp -R "build/VialEffects_artefacts/Release/VST3/Vial Effects.vst3" \
+  "pkg_root/Library/Audio/Plug-Ins/VST3/"
+cp -R "build/VialEffects_artefacts/Release/AU/Vial Effects.component" \
+  "pkg_root/Library/Audio/Plug-Ins/Components/"
+cp -R "build/VialEffects_artefacts/Release/Standalone/Vial Effects.app" \
+  "pkg_root/Applications/"
+
+pkgbuild --root pkg_root \
+  --identifier com.buchenberg.vialeffects \
+  --version "0.1.0" \
+  --install-location / \
+  build/installer/VialEffects-0.1.0-macOS.pkg
+```
+
+The `.pkg` installs:
+- VST3 → `/Library/Audio/Plug-Ins/VST3/Vial Effects.vst3`
+- AU → `/Library/Audio/Plug-Ins/Components/Vial Effects.component`
+- Standalone → `/Applications/Vial Effects.app`
+
+## CI/CD
+
+On every push to `main`, [GitHub Actions](.github/workflows/build-and-release.yml)
+builds installers for all three platforms and creates a GitHub Release with the
+artifacts. Pull requests trigger per-platform build checks (no release).
+
+| Platform | Installer | Build Workflow |
+|----------|-----------|----------------|
+| Windows | `.exe` (Inno Setup) | `build-installer.yml` |
+| macOS | `.pkg` (pkgbuild) | `build-installer-macos.yml` |
+| Linux | `.tar.gz` | `build-installer-linux.yml` |
+| **Release** | all three | `build-and-release.yml` |
 
 ## Licence & attribution
 
