@@ -139,7 +139,7 @@ namespace vial {
 
       // Override this for main processing code.
       virtual void process(int num_samples) = 0;
-      virtual void processWithInput(const poly_float* audio_in, int num_samples) { VITAL_ASSERT(false); }
+      virtual void processWithInput(const poly_float* /*audio_in*/, int /*num_samples*/) { VITAL_ASSERT(false); }
 
       // Override this for plugging in inputs and outputs.
       virtual void init() {
@@ -148,10 +148,10 @@ namespace vial {
       }
 
       // Override this to handle state resetting when a new note is played.
-      virtual void reset(poly_mask reset_mask) { }
+      virtual void reset(poly_mask /*reset_mask*/) { }
 
       // Override this to handle state resetting when the Processor is turned off/on.
-      virtual void hardReset() { reset(poly_mask(-1)); }
+      virtual void hardReset() { reset(poly_mask(~uint32_t(0))); }
 
       bool initialized() { return state_->initialized; }
 
@@ -205,11 +205,11 @@ namespace vial {
         poly_float* audio_out = output(output_index)->buffer;
         poly_int trigger_offset = input(input_index)->source->trigger_offset & reset_mask;
         int num_samples_first = trigger_offset[0];
-        poly_int mask(0, 0, -1, -1);
+        poly_int mask(0u, 0u, ~0u, ~0u);
         for (int i = 0; i < num_samples_first; ++i)
           audio_out[i] = audio_out[i] & mask;
 
-        mask = poly_int(-1, -1, 0, 0);
+        mask = poly_int(~0u, ~0u, 0u, 0u);
         int num_samples_second = trigger_offset[2];
         for (int i = 0; i < num_samples_second; ++i)
           audio_out[i] = audio_out[i] & mask;

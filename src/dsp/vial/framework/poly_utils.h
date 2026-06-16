@@ -599,7 +599,7 @@ namespace vial {
       for (int i = 0; i < poly_float::kSize; ++i) {
         double freq = frequency[i];
         double cycles = freq * seconds;
-        offset.set(i, cycles - ::floor(cycles));
+        offset.set(i, static_cast<float>(cycles - ::floor(cycles)));
       }
 
       return offset;
@@ -619,10 +619,10 @@ namespace vial {
       poly_float transpose_in_octave = tranpose_from_octave;
       for (int i = 0; i <= kNotesPerOctave; ++i) {
         if ((quantize >> (i % kNotesPerOctave)) & 1) {
-          poly_float distance = poly_float::abs(tranpose_from_octave - i);
+          poly_float distance = poly_float::abs(tranpose_from_octave - static_cast<float>(i));
           poly_mask best_mask = poly_float::lessThan(distance, min_distance);
           min_distance = utils::maskLoad(min_distance, distance, best_mask);
-          transpose_in_octave = utils::maskLoad(transpose_in_octave, i, best_mask);
+          transpose_in_octave = utils::maskLoad(transpose_in_octave, static_cast<float>(i), best_mask);
         }
       }
 
@@ -634,9 +634,9 @@ namespace vial {
       float max_snap = 0.0f;
       for (int i = 0; i < kNotesPerOctave; ++i) {
         if ((transpose_quantize >> i) & 1) {
-          max_snap = i;
+          max_snap = static_cast<float>(i);
           if (min_snap == 0.0f)
-            min_snap = i;
+            min_snap = static_cast<float>(i);
         }
       }
 
@@ -655,7 +655,7 @@ namespace vial {
         else if (snap_buffer[i] != 0.0f)
           snap_buffer[i] = i - snap_buffer[i];
         else {
-          snap_buffer[i] = i;
+          snap_buffer[i] = static_cast<float>(i);
           offset = 0.0f;
         }
         offset += 1.0f;

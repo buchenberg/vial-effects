@@ -174,7 +174,7 @@ namespace vial {
     poly_float delta_decay3 = (decays_[2] - current_decay3) * tick_increment;
     poly_float delta_decay4 = (decays_[3] - current_decay4) * tick_increment;
 
-    poly_int delay_offset(0, -1, -2, -3);
+    poly_int delay_offset(0u, static_cast<uint32_t>(-1), static_cast<uint32_t>(-2), static_cast<uint32_t>(-3));
     if (buffer_scale)
       delay_offset += poly_float::kSize;
 
@@ -213,8 +213,8 @@ namespace vial {
 
     poly_float current_sample_delay = sample_delay_;
     poly_float current_delay_increment = sample_delay_increment_;
-    poly_float end_target = current_sample_delay + current_delay_increment * num_samples;
-    poly_float target_delay = utils::clamp(input(kDelay)->at(0) * getSampleRate(), kMinDelay, kMaxSampleRate);
+    poly_float end_target = current_sample_delay + current_delay_increment * static_cast<float>(num_samples);
+    poly_float target_delay = utils::clamp(input(kDelay)->at(0) * static_cast<float>(getSampleRate()), kMinDelay, kMaxSampleRate);
     target_delay = utils::interpolate(sample_delay_, target_delay, kSampleDelayMultiplier);
     poly_float makeup_delay = target_delay - end_target;
     poly_float delta_delay_increment = makeup_delay / (0.5f * num_samples * num_samples) * kSampleIncrementMultiplier;

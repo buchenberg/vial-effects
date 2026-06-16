@@ -40,14 +40,14 @@ namespace vial {
         code += index;
       }
 
-      return code;
+      return static_cast<mono_float>(code);
     }
 
     void decodeFloatToOrder(int* order, mono_float float_code, int size) {
       // Max array size you can encode in 32 bits.
       VITAL_ASSERT(size <= kMaxOrderLength);
 
-      int code = float_code;
+      int code = static_cast<int>(float_code);
       for (int i = 0; i < size; ++i)
         order[i] = i;
 
@@ -67,15 +67,15 @@ namespace vial {
 
     void floatToPcmData(int16_t* pcm_data, const float* float_data, int size) {
       for (int i = 0; i < size; ++i)
-        pcm_data[i] = utils::clamp(float_data[i] * kPcmScale, -kPcmScale, kPcmScale);
+        pcm_data[i] = static_cast<int16_t>(utils::clamp(float_data[i] * kPcmScale, -kPcmScale, kPcmScale));
     }
 
     void complexToPcmData(int16_t* pcm_data, const std::complex<float>* complex_data, int size) {
       for (int i = 0; i < size / 2; ++i) {
         float amp = std::abs(complex_data[i]);
         float phase = std::arg(complex_data[i]);
-        pcm_data[i * 2] = utils::clamp(amp * kComplexAmplitudePcmScale, -kPcmScale, kPcmScale);
-        pcm_data[i * 2 + 1] = utils::clamp(phase * kComplexPhasePcmScale, -kPcmScale, kPcmScale);
+        pcm_data[i * 2] = static_cast<int16_t>(utils::clamp(amp * kComplexAmplitudePcmScale, -kPcmScale, kPcmScale));
+        pcm_data[i * 2 + 1] = static_cast<int16_t>(utils::clamp(phase * kComplexPhasePcmScale, -kPcmScale, kPcmScale));
       }
     }
 

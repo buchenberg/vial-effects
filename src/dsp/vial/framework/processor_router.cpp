@@ -267,7 +267,7 @@ namespace vial {
     return true;
   }
 
-  bool ProcessorRouter::isPolyphonic(const Processor* processor) const {
+  bool ProcessorRouter::isPolyphonic(const Processor* /*processor*/) const {
     if (router_)
       return router_->isPolyphonic(this);
     return false;

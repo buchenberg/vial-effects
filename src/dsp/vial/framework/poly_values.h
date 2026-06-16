@@ -170,7 +170,7 @@ namespace vial {
     }
 
     static force_inline simd_type vector_call bitNot(simd_type value) {
-      return bitXor(value, init(-1));
+      return bitXor(value, init(~uint32_t(0)));
     }
 
     static force_inline simd_type vector_call max(simd_type one, simd_type two) {
@@ -626,7 +626,7 @@ namespace vial {
     }
 
     static force_inline simd_type vector_call bitNot(simd_type value) {
-      return bitXor(value, poly_mask::init(-1));
+      return bitXor(value, poly_mask::init(~uint32_t(0)));
     }
 
     static force_inline simd_type vector_call max(simd_type one, simd_type two) {

@@ -81,7 +81,7 @@ namespace vial {
       void hardReset() override;
 
       force_inline poly_float readFeedback(const mono_float* const* lookups, poly_float offset) {
-        poly_float write_offset = poly_float(write_index_) - offset;
+        poly_float write_offset = poly_float(static_cast<float>(write_index_)) - offset;
         poly_float floored_offset = utils::floor(write_offset);
         poly_float t = write_offset - floored_offset;
         matrix interpolation_matrix = utils::getPolynomialInterpolationMatrix(t);

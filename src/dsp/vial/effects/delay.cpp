@@ -45,7 +45,7 @@ namespace vial {
   template<class MemoryType>
   void Delay<MemoryType>::setMaxSamples(int max_samples) {
     memory_ = std::make_unique<MemoryType>(max_samples);
-    period_ = utils::min(period_, max_samples - 1);
+    period_ = utils::min(period_, static_cast<mono_float>(max_samples - 1));
   }
   
   template<class MemoryType>
@@ -80,7 +80,7 @@ namespace vial {
     dry_ = futils::equalPowerFadeInverse(wet);
     feedback_ = utils::clamp(input(kFeedback)->at(0), -1.0f, 1.0f);
 
-    poly_float samples = poly_float(getSampleRate()) / last_frequency_;
+    poly_float samples = poly_float(static_cast<float>(getSampleRate())) / last_frequency_;
     if (style == kMidPingPong)
       samples += utils::swapStereo(samples) & constants::kLeftMask;
     if (style == kPingPong) {
@@ -88,7 +88,7 @@ namespace vial {
       feedback_ = utils::maskLoad(feedback_, 1.0f, constants::kRightMask);
     }
 
-    period_ = utils::clamp(samples, 3.0f, memory_->getMaxPeriod());
+    period_ = utils::clamp(samples, 3.0f, static_cast<mono_float>(memory_->getMaxPeriod()));
     period_ = utils::interpolate(current_period, period_, 0.5f);
 
     poly_float filter_cutoff = input(kFilterCutoff)->at(0);

@@ -49,7 +49,7 @@ namespace vial {
       output()->buffer[i] = value_;
   }
 
-  void cr::Value::process(int num_samples) {
+  void cr::Value::process(int /*num_samples*/) {
     poly_mask trigger_mask = input(kSet)->source->trigger_mask;
     if (trigger_mask.anyMask()) {
       poly_float trigger_value = input(kSet)->source->trigger_value;
