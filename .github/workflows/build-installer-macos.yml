@@ -3,6 +3,8 @@ name: Build macOS Installer
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -30,45 +32,52 @@ jobs:
       - name: Build web UI
         run: |
           cd ui
-          npm install
+          npm ci
           npm run build
           
-      - name: Setup CMake
-        uses: lukka/get-cmake@latest
-        
       - name: Configure CMake
-        run: |
-          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
           
       - name: Build plugin
         run: cmake --build build
         
-      - name: Create DMG installer
+      - name: Create .pkg installer
         run: |
-          mkdir -p build/installer
-          mkdir -p dmg_staging
+          VERSION=$(grep -oP 'project\(VialEffects VERSION \K[0-9.]+' CMakeLists.txt)
+
+          # Stage files under a directory tree mirroring the install locations
+          mkdir -p pkg_root/Library/Audio/Plug-Ins/VST3
+          mkdir -p pkg_root/Library/Audio/Plug-Ins/Components
+          mkdir -p pkg_root/Applications
           
           # Copy VST3
           if [ -d "build/VialEffects_artefacts/Release/VST3/Vial Effects.vst3" ]; then
-            cp -R "build/VialEffects_artefacts/Release/VST3/Vial Effects.vst3" dmg_staging/
+            cp -R "build/VialEffects_artefacts/Release/VST3/Vial Effects.vst3" \
+              "pkg_root/Library/Audio/Plug-Ins/VST3/"
           fi
           
           # Copy AU
           if [ -d "build/VialEffects_artefacts/Release/AU/Vial Effects.component" ]; then
-            cp -R "build/VialEffects_artefacts/Release/AU/Vial Effects.component" dmg_staging/
+            cp -R "build/VialEffects_artefacts/Release/AU/Vial Effects.component" \
+              "pkg_root/Library/Audio/Plug-Ins/Components/"
           fi
           
           # Copy Standalone
           if [ -d "build/VialEffects_artefacts/Release/Standalone/Vial Effects.app" ]; then
-            cp -R "build/VialEffects_artefacts/Release/Standalone/Vial Effects.app" dmg_staging/
+            cp -R "build/VialEffects_artefacts/Release/Standalone/Vial Effects.app" \
+              "pkg_root/Applications/"
           fi
           
-          # Create DMG
-          hdiutil create -volname "Vial Effects" -srcfolder dmg_staging -ov -format UDZO build/installer/VialEffects-macOS.dmg
+          mkdir -p build/installer
+          pkgbuild --root pkg_root \
+            --identifier com.buchenberg.vialeffects \
+            --version "${VERSION}" \
+            --install-location / \
+            "build/installer/VialEffects-${VERSION}-macOS.pkg"
           
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
           name: VialEffects-macOS-Installer
-          path: build/installer/VialEffects-macOS.dmg
+          path: build/installer/VialEffects-*-macOS.pkg
           retention-days: 30
