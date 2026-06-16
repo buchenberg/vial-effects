@@ -36,7 +36,7 @@ audio in ─▶ Chorus ─▶ Delay ─▶ Reverb ─▶ audio out
   (the shared parameter table, mirroring vial's `synth_parameters.cpp`).
 - **`src/plugin/`** — `VialEffectsProcessor` (APVTS, audio) and
   `VialEffectsEditor` (WebView, parameter relays).
-- **`ui/`** — React + Vite front-end *(pending)*.
+- **`ui/`** — React + Vite front-end
 
 ## Building
 
@@ -50,18 +50,21 @@ git clone --depth 1 https://github.com/juce-framework/JUCE.git third_party/JUCE
 # 2. Build the web UI (produces ui/dist/index.html, embedded as binary data)
 cd ui && npm install && npm run build && cd ..
 
-# 3. Configure + build the plugin (Windows: run inside a VS dev shell / vcvars)
+# 3. Configure + build the plugin
+#    Windows: run inside a VS dev shell. WebView2 NuGet must be extracted to
+#    third_party/Microsoft.Web.WebView2.<version>/ (the subdirectory name
+#    matters — JUCE's FindWebView2.cmake globs for it).
 cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
-      -DJUCE_WEBVIEW2_PACKAGE_LOCATION=third_party/webview2
+      -DJUCE_WEBVIEW2_PACKAGE_LOCATION=third_party
 cmake --build build
 ```
 
-On Windows the WebView2 NuGet package must be extracted into a
-`Microsoft.Web.WebView2.<version>/` subfolder under the path passed to
-`JUCE_WEBVIEW2_PACKAGE_LOCATION`. The default location is `third_party/webview2`.
-The editor explicitly selects the WebView2
-backend (the JUCE default on Windows is the legacy IE backend, which the resource
-provider does not support).
+On Windows the WebView2 NuGet package must be downloaded and extracted so that
+a `Microsoft.Web.WebView2.<version>/` subdirectory exists under
+`third_party/`. The CMake variable `JUCE_WEBVIEW2_PACKAGE_LOCATION` should
+point to `third_party` (one level up). JUCE's `FindWebView2.cmake` searches for
+`<JUCE_WEBVIEW2_PACKAGE_LOCATION>/*Microsoft.Web.WebView2*` to find the
+package.
 
 ### Tests
 
@@ -155,14 +158,24 @@ Pull requests that are still open trigger build validation across all platforms
 (the version bump and release steps are skipped).
 
 | Platform | Installer |
-| ---------- | ----------- |
+|----------|-----------|
 | Windows | `.msi` (WiX) |
 | macOS | `.pkg` (pkgbuild) |
 | Linux | `.tar.gz` |
+
+## Linux
+
+The Linux build is distributed as a `.tar.gz` containing the VST3 bundle
+and standalone executable. Extract and place them manually:
+
+```bash
+tar -xzf VialEffects-0.1.0-Linux.tar.gz
+cp -R "Vial Effects.vst3" ~/.vst3/
+cp "Vial Effects" ~/.local/bin/
+```
 
 ## Licence & attribution
 
 Derived from vial, which is itself based on Matt Tytel's **Vital**. The vendored
 DSP retains its original GPLv3 headers, so this project is distributed under the
 **GNU General Public License v3** — see [LICENSE](LICENSE).
-# test trigger
