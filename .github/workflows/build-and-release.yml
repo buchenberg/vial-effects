@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       bump:
-        description: 'Version bump type (patch, minor, major)'
+        description: 'Version bump type'
         required: true
         type: choice
         options: [patch, minor, major]
@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   # --------------------------------------------------------------------------
-  # Determine whether to proceed and calculate the new version
+  # Determine bump type and calculate new version
   # --------------------------------------------------------------------------
   version:
     runs-on: ubuntu-latest
@@ -38,13 +38,10 @@ jobs:
             echo "type=${{ inputs.bump }}" >> "$GITHUB_OUTPUT"
           else
             TITLE="${{ github.event.pull_request.title }}"
-            # Check for breaking change
             if echo "$TITLE" | grep -qiE 'BREAKING[ -]CHANGE|!:'; then
               echo "type=major" >> "$GITHUB_OUTPUT"
             elif echo "$TITLE" | grep -qiE '^feat[\(:]'; then
               echo "type=minor" >> "$GITHUB_OUTPUT"
-            elif echo "$TITLE" | grep -qiE '^fix[\(:]'; then
-              echo "type=patch" >> "$GITHUB_OUTPUT"
             else
               echo "type=patch" >> "$GITHUB_OUTPUT"
             fi
@@ -69,18 +66,14 @@ jobs:
           echo "tag=v${NEW}" >> "$GITHUB_OUTPUT"
           echo "bump=${BUMP}" >> "$GITHUB_OUTPUT"
 
-          echo "::notice::Version bump: ${OLD} → ${NEW} (${BUMP})"
+          echo "::notice::Version bump: ${OLD} -> ${NEW} (${BUMP})"
 
       - name: Bump version in source files
         if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
         run: |
           NEW="${{ steps.ver.outputs.new_version }}"
           OLD="${{ steps.ver.outputs.old_version }}"
-
-          # CMakeLists.txt
           sed -i "s/project(VialEffects VERSION ${OLD}/project(VialEffects VERSION ${NEW}/" CMakeLists.txt
-
-          # ui/package.json
           sed -i "s/\"version\": \"${OLD}\"/\"version\": \"${NEW}\"/" ui/package.json
 
       - name: Commit and push version bump
@@ -88,9 +81,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
           git add CMakeLists.txt ui/package.json
-          git commit -m "chore(release): bump version to ${{ steps.ver.outputs.new }} [skip ci]"
+          git commit -m "chore(release): bump version to ${{ steps.ver.outputs.new_version }} [skip ci]"
           git tag "${{ steps.ver.outputs.tag }}"
           git push origin main --tags
 
@@ -105,7 +97,6 @@ jobs:
         shell: bash
     steps:
       - uses: actions/checkout@v4
-        with:
 
       - uses: actions/setup-node@v4
         with:
@@ -129,7 +120,6 @@ jobs:
             "https://www.nuget.org/api/v2/package/Microsoft.Web.WebView2/1.0.3485.44"
           cd third_party/webview2
           unzip -o webview2.nupkg
-          # JUCE's FindWebView2.cmake globs for *Microsoft.Web.WebView2* subdir
           cd ..
           mv webview2 "Microsoft.Web.WebView2.1.0.3485.44"
 
@@ -160,14 +150,13 @@ jobs:
           retention-days: 30
 
   # --------------------------------------------------------------------------
-  # macOS — flat .pkg installer (VST3 + AU + Standalone)
+  # macOS — flat .pkg installer
   # --------------------------------------------------------------------------
   build-macos:
     needs: version
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-        with:
 
       - uses: actions/setup-node@v4
         with:
@@ -190,7 +179,6 @@ jobs:
       - name: Create .pkg installer
         run: |
           VERSION="${{ needs.version.outputs.new_version }}"
-
           mkdir -p pkg_root/Library/Audio/Plug-Ins/VST3
           mkdir -p pkg_root/Library/Audio/Plug-Ins/Components
           mkdir -p pkg_root/Applications
@@ -216,14 +204,13 @@ jobs:
           retention-days: 30
 
   # --------------------------------------------------------------------------
-  # Linux — tarball (VST3 + Standalone)
+  # Linux — tarball
   # --------------------------------------------------------------------------
   build-linux:
     needs: version
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
 
       - name: Install system dependencies
         run: |
@@ -289,7 +276,7 @@ jobs:
           retention-days: 30
 
   # --------------------------------------------------------------------------
-  # Release — collect all artifacts and create a GitHub Release
+  # Release — only on PR merge or manual dispatch
   # --------------------------------------------------------------------------
   release:
     needs: [version, build-windows, build-macos, build-linux]
@@ -299,7 +286,6 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-        with:
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -314,16 +300,16 @@ jobs:
           body: |
             ## Changes
 
-            Version bump: **${{ needs.version.outputs.old_version }} → ${{ needs.version.outputs.new_version }}** (${{ needs.version.outputs.bump }})
+            **${{ needs.version.outputs.old_version }} → ${{ needs.version.outputs.new_version }}** (${{ needs.version.outputs.bump }})
 
             Merged from PR [#${{ github.event.pull_request.number }}](${{ github.event.pull_request.html_url }}): ${{ github.event.pull_request.title }}
 
             ### Installers
             | Platform | Format | Contents |
             |----------|--------|----------|
-            | **Windows** | `.exe` | VST3 + Standalone |
-            | **macOS**   | `.pkg` | VST3 + AU + Standalone |
-            | **Linux**   | `.tar.gz` | VST3 + Standalone |
+            | Windows | `.exe` | VST3 + Standalone |
+            | macOS   | `.pkg` | VST3 + AU + Standalone |
+            | Linux   | `.tar.gz` | VST3 + Standalone |
           files: |
             artifacts/**/*
           draft: false
