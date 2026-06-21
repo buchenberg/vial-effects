@@ -31,9 +31,12 @@ juce::AudioProcessorValueTreeState::ParameterLayout VialEffectsProcessor::create
             params.push_back (std::make_unique<juce::AudioParameterChoice> (
                 id, name, kSyncChoices, (int) p.defaultValue));
         } else if (p.scale == Scale::Indexed) {
-            // voices, tempo indices
-            params.push_back (std::make_unique<juce::AudioParameterInt> (
-                id, name, (int) p.min, (int) p.max, (int) p.defaultValue));
+            // voices, tempo indices — use Float with interval=1 so the
+            // WebSliderRelay reports scaled values correctly in the standalone
+            // (AudioParameterInt's normalised->scaled round-trip loses the value).
+            juce::NormalisableRange<float> range (p.min, p.max, 1.0f);
+            params.push_back (std::make_unique<juce::AudioParameterFloat> (
+                id, name, range, p.defaultValue));
         } else {
             juce::NormalisableRange<float> range (p.min, p.max);
             params.push_back (std::make_unique<juce::AudioParameterFloat> (

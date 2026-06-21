@@ -43,6 +43,10 @@ export function ValueBox({ id, label, format }: ValueBoxProps) {
     setInt(value + (e.deltaY < 0 ? 1 : -1));
     slider.dragEnd();
   };
+  const onDoubleClick = () => {
+    if (!spec) return;
+    setInt(spec.def);
+  };
 
   return (
     <div
@@ -56,6 +60,7 @@ export function ValueBox({ id, label, format }: ValueBoxProps) {
       onPointerUp={endDrag}
       onPointerCancel={endDrag}
       onWheel={onWheel}
+      onDoubleClick={onDoubleClick}
     >
       <div className="box__value">{format(value)}</div>
       <div className="box__label">{label}</div>

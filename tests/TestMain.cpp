@@ -38,38 +38,53 @@ public:
 
         beginTest ("linear passthrough");
         {
-            const auto& fb = findParam ("delay_feedback"); // linear
-            expectWithinAbsoluteError (toEngineValue (fb, 0.5f), 0.5f, 1e-6f);
-            expectWithinAbsoluteError (toEngineValue (fb, -1.0f), -1.0f, 1e-6f);
+            const auto* fb = findParam ("delay_feedback"); // linear
+            expect (fb != nullptr, "param not found");
+            if (fb) {
+                expectWithinAbsoluteError (toEngineValue (*fb, 0.5f), 0.5f, 1e-6f);
+                expectWithinAbsoluteError (toEngineValue (*fb, -1.0f), -1.0f, 1e-6f);
+            }
         }
 
         beginTest ("exponential = 2^x, clamped to [min,max]");
         {
-            const auto& decay = findParam ("reverb_decay_time"); // exp, -6..6
-            expectWithinAbsoluteError (toEngineValue (decay, 0.0f), 1.0f, 1e-5f);
-            expectWithinAbsoluteError (toEngineValue (decay, 6.0f), 64.0f, 1e-3f);
-            expectWithinAbsoluteError (toEngineValue (decay, -6.0f), 0.015625f, 1e-5f);
-            // out-of-range input is clamped before exponentiation
-            expectWithinAbsoluteError (toEngineValue (decay, 99.0f), 64.0f, 1e-3f);
+            const auto* decay = findParam ("reverb_decay_time"); // exp, -6..6
+            expect (decay != nullptr, "param not found");
+            if (decay) {
+                expectWithinAbsoluteError (toEngineValue (*decay, 0.0f), 1.0f, 1e-5f);
+                expectWithinAbsoluteError (toEngineValue (*decay, 6.0f), 64.0f, 1e-3f);
+                expectWithinAbsoluteError (toEngineValue (*decay, -6.0f), 0.015625f, 1e-5f);
+                // out-of-range input is clamped before exponentiation
+                expectWithinAbsoluteError (toEngineValue (*decay, 99.0f), 64.0f, 1e-3f);
+            }
 
-            const auto& freq = findParam ("delay_frequency"); // exp, -2..9 (engine ignores displayInvert)
-            expectWithinAbsoluteError (toEngineValue (freq, 0.0f), 1.0f, 1e-5f);
-            expectWithinAbsoluteError (toEngineValue (freq, 3.0f), 8.0f, 1e-4f);
+            const auto* freq = findParam ("delay_frequency"); // exp, -2..9 (engine ignores displayInvert)
+            expect (freq != nullptr, "param not found");
+            if (freq) {
+                expectWithinAbsoluteError (toEngineValue (*freq, 0.0f), 1.0f, 1e-5f);
+                expectWithinAbsoluteError (toEngineValue (*freq, 3.0f), 8.0f, 1e-4f);
+            }
         }
 
         beginTest ("quadratic = x^2 (clamped >= 0)");
         {
-            const auto& amt = findParam ("reverb_chorus_amount"); // quadratic, post_offset 0
-            expectWithinAbsoluteError (toEngineValue (amt, 0.5f), 0.25f, 1e-6f);
-            expectWithinAbsoluteError (toEngineValue (amt, 1.0f), 1.0f, 1e-6f);
-            expectWithinAbsoluteError (toEngineValue (amt, -0.3f), 0.0f, 1e-6f);
+            const auto* amt = findParam ("reverb_chorus_amount"); // quadratic, post_offset 0
+            expect (amt != nullptr, "param not found");
+            if (amt) {
+                expectWithinAbsoluteError (toEngineValue (*amt, 0.5f), 0.25f, 1e-6f);
+                expectWithinAbsoluteError (toEngineValue (*amt, 1.0f), 1.0f, 1e-6f);
+                expectWithinAbsoluteError (toEngineValue (*amt, -0.3f), 0.0f, 1e-6f);
+            }
         }
 
         beginTest ("indexed = round");
         {
-            const auto& style = findParam ("delay_style"); // indexed 0..3
-            expectWithinAbsoluteError (toEngineValue (style, 2.4f), 2.0f, 1e-6f);
-            expectWithinAbsoluteError (toEngineValue (style, 2.6f), 3.0f, 1e-6f);
+            const auto* style = findParam ("delay_style"); // indexed 0..3
+            expect (style != nullptr, "param not found");
+            if (style) {
+                expectWithinAbsoluteError (toEngineValue (*style, 2.4f), 2.0f, 1e-6f);
+                expectWithinAbsoluteError (toEngineValue (*style, 2.6f), 3.0f, 1e-6f);
+            }
         }
     }
 };
