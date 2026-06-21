@@ -9,8 +9,7 @@
 #pragma once
 
 #include <array>
-#include <unordered_map>
-#include <string>
+#include <memory>
 
 #include "EffectParameters.h"
 #include "Chorus.h"
@@ -29,28 +28,42 @@ public:
 
     void setBpm (double bpm) { bpm_ = bpm > 0.0 ? bpm : 120.0; }
 
-    // Copy the current raw parameter snapshot (indexed parallel to vfx::kParams).
     void setRawParameters (const std::array<float, kParams.size()>& raw) { raw_ = raw; }
 
-    // Stereo, in place. numSamples may exceed the internal 128-sample block.
     void process (float* left, float* right, int numSamples);
 
 private:
-    float raw (const char* id) const { return raw_[indexOf_.at (id)]; }
-    float scaled (const char* id) const { return toEngineValue (findParam (id), raw (id)); }
-    float tempoSyncFrequency (const char* prefix) const;
+    // Pre-resolved indices into kParams / raw_ — resolved once in the constructor
+    // so the audio thread never does string comparisons or hash lookups.
+    struct Idx {
+        int chorusOn, chorusDryWet, chorusFeedback, chorusCutoff, chorusSpread;
+        int chorusVoices, chorusFrequency, chorusSync, chorusTempo, chorusModDepth;
+        int chorusDelay1, chorusDelay2;
+        int delayOn, delayDryWet, delayFeedback, delayFrequency;
+        int delayStyle, delayFilterCutoff, delayFilterSpread, delaySync, delayTempo;
+        int reverbOn, reverbDryWet, reverbDecayTime;
+        int reverbPreLowCutoff, reverbPreHighCutoff;
+        int reverbLowCutoff, reverbLowGain, reverbHighCutoff, reverbHighGain;
+        int reverbChorusAmount, reverbChorusFrequency, reverbSize, reverbDelay;
+    } idx_;
 
-    vial::Reverb* reverb_ = nullptr;
-    vial::StereoDelay* delay_ = nullptr;
+    int indexOf (const char* id) const;
+
+    float raw (int i) const { return raw_[i]; }
+    float scaled (int i) const { return toEngineValue (kParams[i], raw_[i]); }
+
+    float chorusTempoSyncFrequency() const;
+    float delayTempoSyncFrequency() const;
+
+    std::unique_ptr<vial::Reverb> reverb_;
+    std::unique_ptr<vial::StereoDelay> delay_;
     Chorus chorus_;
 
-    // Control-rate inputs (index == Processor input enum). Index 0 (kAudio) unused.
     vial::cr::Output reverbIn_[vial::Reverb::kNumInputs];
     vial::cr::Output delayIn_[vial::StereoDelay::kNumInputs];
 
-    vial::Output ioBuffer_; // packed stereo block, also reused as passthrough
+    vial::Output ioBuffer_;
 
-    std::unordered_map<std::string, int> indexOf_;
     std::array<float, kParams.size()> raw_ {};
 
     double bpm_ = 120.0;

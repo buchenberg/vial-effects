@@ -13,11 +13,6 @@ Chorus, Delay, Reverb).
 > **Status:** Builds and runs (VST3 + Standalone on Windows; AU on macOS). The
 > DSP, plugin, WebView UI, and tests are all in place. See
 > [CHANGELOG.md](CHANGELOG.md).
->
-> Known issue: in the standalone, integer parameters (chorus voices, the tempo
-> selectors) display their value differently than the dev/test build — the
-> WebView relay reports `AudioParameterInt` values in a way the UI reads back as
-> the minimum. Float controls are correct. Follow-up needed.
 
 ## Architecture
 
@@ -69,8 +64,10 @@ package.
 ### Tests
 
 ```bash
-ctest --test-dir build          # native DSP tests (also: build/.../VialEffectsTests.exe)
-cd ui && npm test && npm run e2e # Vitest component tests + Playwright e2e/visual
+ctest --test-dir build                       # native DSP tests (also: build/.../VialEffectsTests.exe)
+cd ui && npm run typecheck                   # TypeScript type checking
+cd ui && npm test                            # Vitest component tests
+cd ui && npm run e2e                         # Playwright e2e / visual tests
 ```
 
 ## Windows Installer (.msi)
@@ -151,8 +148,9 @@ automatically:
    - `fix:` → patch (`0.1.0` → `0.1.1`)
    - `feat:` → minor (`0.1.0` → `0.2.0`)
    - `BREAKING CHANGE` or `!:` → major (`0.1.0` → `1.0.0`)
-2. **Builds installers** for Windows, macOS, and Linux in parallel
-3. **Creates a GitHub Release** with all three installers
+2. **Runs tests** — TypeScript typecheck + Vitest component tests, plus native DSP tests (`ctest`) on each platform
+3. **Builds installers** for Windows, macOS, and Linux in parallel
+4. **Creates a GitHub Release** with all three installers
 
 Pull requests that are still open trigger build validation across all platforms
 (the version bump and release steps are skipped).
@@ -179,4 +177,3 @@ cp "Vial Effects" ~/.local/bin/
 Derived from vial, which is itself based on Matt Tytel's **Vital**. The vendored
 DSP retains its original GPLv3 headers, so this project is distributed under the
 **GNU General Public License v3** — see [LICENSE](LICENSE).
-# test

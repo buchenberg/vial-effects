@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useCombo } from "../hooks";
 
 export interface ComboBoxProps {
@@ -9,10 +9,22 @@ export interface ComboBoxProps {
 export function ComboBox({ id, label }: ComboBoxProps) {
   const combo = useCombo(id);
   const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const current = combo.choices[combo.index] ?? "";
+
+  useEffect(() => {
+    if (!open) return;
+    const onClick = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node))
+        setOpen(false);
+    };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, [open]);
 
   return (
     <div
+      ref={containerRef}
       className="box combo"
       data-param={id}
       role="combobox"

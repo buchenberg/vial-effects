@@ -29,6 +29,7 @@ export function Knob({ id, label, size = 46 }: KnobProps) {
   const spec = PARAM_BY_ID[id];
   const dragRef = useRef<{ startY: number; startNorm: number } | null>(null);
   const [hover, setHover] = useState(false);
+  const [dragging, setDragging] = useState(false);
 
   const norm = slider.normalised;
   const angle = START_ANGLE + norm * SWEEP;
@@ -41,6 +42,7 @@ export function Knob({ id, label, size = 46 }: KnobProps) {
   const onPointerDown = (e: React.PointerEvent) => {
     (e.target as Element).setPointerCapture?.(e.pointerId);
     dragRef.current = { startY: e.clientY, startNorm: norm };
+    setDragging(true);
     slider.dragStart();
   };
   const onPointerMove = (e: React.PointerEvent) => {
@@ -52,6 +54,7 @@ export function Knob({ id, label, size = 46 }: KnobProps) {
   const endDrag = (e: React.PointerEvent) => {
     if (!dragRef.current) return;
     dragRef.current = null;
+    setDragging(false);
     slider.dragEnd();
     (e.target as Element).releasePointerCapture?.(e.pointerId);
   };
@@ -96,7 +99,7 @@ export function Knob({ id, label, size = 46 }: KnobProps) {
         <line x1={cx} y1={cy} x2={pointer.x} y2={pointer.y} stroke="var(--text)" strokeWidth={2} strokeLinecap="round" />
       </svg>
       <div className="knob__label">{label}</div>
-      <div className="knob__value">{hover || dragRef.current ? formatValue(id, slider.scaled) : ""}</div>
+      <div className="knob__value">{hover || dragging ? formatValue(id, slider.scaled) : ""}</div>
     </div>
   );
 }

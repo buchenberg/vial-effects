@@ -86,10 +86,27 @@ jobs:
           git push origin main --tags
 
   # --------------------------------------------------------------------------
+  # UI tests (Vitest component tests — runs once, not per-platform)
+  # --------------------------------------------------------------------------
+  test-ui:
+    needs: version
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install UI dependencies
+        run: cd ui && npm ci
+      - name: Run Vitest component tests
+        run: cd ui && npm test
+
+  # --------------------------------------------------------------------------
   # Windows — Wix Setup .msi installer
   # --------------------------------------------------------------------------
   build-windows:
-    needs: version
+    needs: [version, test-ui]
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: windows-latest
     defaults:
@@ -103,7 +120,7 @@ jobs:
           node-version: '20'
 
       - name: Build web UI
-        run: cd ui && npm ci && npm run build
+        run: cd ui && npm ci && npm run typecheck && npm run build
 
       - name: Clone JUCE
         run: |
@@ -131,6 +148,9 @@ jobs:
 
       - name: Build plugin
         run: cmake --build build
+
+      - name: Run DSP tests
+        run: ctest --test-dir build --output-on-failure
 
       - name: Build WiX installer (.msi)
         shell: pwsh
@@ -164,7 +184,7 @@ jobs:
   # macOS — flat .pkg installer
   # --------------------------------------------------------------------------
   build-macos:
-    needs: version
+    needs: [version, test-ui]
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: macos-latest
     steps:
@@ -175,7 +195,7 @@ jobs:
           node-version: '20'
 
       - name: Build web UI
-        run: cd ui && npm ci && npm run build
+        run: cd ui && npm ci && npm run typecheck && npm run build
 
       - name: Clone JUCE
         run: |
@@ -187,6 +207,9 @@ jobs:
 
       - name: Build plugin
         run: cmake --build build
+
+      - name: Run DSP tests
+        run: ctest --test-dir build --output-on-failure
 
       - name: Create .pkg installer
         run: |
@@ -219,7 +242,7 @@ jobs:
   # Linux — tarball
   # --------------------------------------------------------------------------
   build-linux:
-    needs: version
+    needs: [version, test-ui]
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
@@ -250,7 +273,7 @@ jobs:
           node-version: '20'
 
       - name: Build web UI
-        run: cd ui && npm ci && npm run build
+        run: cd ui && npm ci && npm run typecheck && npm run build
 
       - name: Clone JUCE
         run: |
@@ -266,6 +289,9 @@ jobs:
 
       - name: Build plugin
         run: cmake --build build
+
+      - name: Run DSP tests
+        run: ctest --test-dir build --output-on-failure
 
       - name: Create tarball
         run: |
@@ -292,7 +318,7 @@ jobs:
   # Release — only on PR merge or manual dispatch
   # --------------------------------------------------------------------------
   release:
-    needs: [version, build-windows, build-macos, build-linux]
+    needs: [version, test-ui, build-windows, build-macos, build-linux]
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:

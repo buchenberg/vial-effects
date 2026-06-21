@@ -83,11 +83,11 @@ inline constexpr std::array<ParamSpec, 34> kParams { {
     { "reverb_chorus_frequency",-8.0f,3.0f,-2.0f,     0.0f, 1.0f,   Scale::Exponential, false, " Hz",       "Reverb Chorus Frequency" },
 } };
 
-inline const ParamSpec& findParam (const char* id) {
+inline const ParamSpec* findParam (const char* id) {
     for (const auto& p : kParams)
         if (std::string_view (p.id) == id)
-            return p;
-    return kParams[0]; // unreachable for valid ids
+            return &p;
+    return nullptr; // caller must check
 }
 
 // Small local clamp so this header has no JUCE dependency (usable in tests).

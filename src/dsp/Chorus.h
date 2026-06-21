@@ -8,6 +8,9 @@
  */
 #pragma once
 
+#include <array>
+#include <memory>
+
 #include "delay.h"
 #include "memory.h"
 
@@ -42,7 +45,7 @@ public:
 private:
     int getNextNumVoicePairs();
 
-    vial::MultiDelay* delays_[kMaxDelayPairs] { nullptr, nullptr, nullptr, nullptr };
+    std::array<std::unique_ptr<vial::MultiDelay>, kMaxDelayPairs> delays_;
 
     // Control-rate inputs plugged into each MultiDelay.
     vial::cr::Output delayFrequency_[kMaxDelayPairs];

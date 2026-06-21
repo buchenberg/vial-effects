@@ -18,7 +18,7 @@ Chorus::Chorus() {
     styleMono_.buffer[0] = (float) MultiDelay::kMono;
 
     for (int i = 0; i < kMaxDelayPairs; ++i) {
-        delays_[i] = new MultiDelay (max_samples);
+        delays_[i] = std::make_unique<MultiDelay> (max_samples);
         delays_[i]->plug (&delayFrequency_[i], MultiDelay::kFrequency);
         delays_[i]->plug (&feedbackIn_,         MultiDelay::kFeedback);
         delays_[i]->plug (&wetOne_,             MultiDelay::kWet);
@@ -28,10 +28,7 @@ Chorus::Chorus() {
     }
 }
 
-Chorus::~Chorus() {
-    for (int i = 0; i < kMaxDelayPairs; ++i)
-        delete delays_[i];
-}
+Chorus::~Chorus() = default;
 
 void Chorus::setSampleRate (int sampleRate) {
     sampleRate_ = sampleRate;
@@ -86,8 +83,8 @@ void Chorus::process (const poly_float* audio_in, int num_samples) {
         poly_float mod_depth = poly_float (modDepth_) * kMaxChorusModulation;
         poly_float mod = utils::sin (phase * vial::kPi * 2.0f) * 0.5f + 1.0f;
         float delay_t = 0.0f;
-        if (i > 0)
-            delay_t = i / (num_voices - 1.0f);
+        if (i > 0 && num_voices > 1)
+            delay_t = i / (float) (num_voices - 1);
         poly_float delay = mod * mod_depth + utils::interpolate (delay_time, average_delay, delay_t);
 
         poly_float delay_frequency = poly_float (1.0f) / utils::max (0.00001f, delay);
